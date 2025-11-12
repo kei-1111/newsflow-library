@@ -7,5 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
 
     // Convention Plugins
+    alias(libs.plugins.newsflow.library.android.library) apply false
     alias(libs.plugins.newsflow.library.detekt) apply false
 }

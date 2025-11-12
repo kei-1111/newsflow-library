@@ -23,4 +23,5 @@ detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 # Convention Plugins
+newsflow-library-android-library = { id = "newsflow.library.android.library" }
 newsflow-library-detekt = { id = "newsflow.library.detekt" }
