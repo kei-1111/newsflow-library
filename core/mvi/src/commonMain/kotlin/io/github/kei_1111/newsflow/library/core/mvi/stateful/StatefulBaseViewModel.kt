@@ -1,9 +1,9 @@
-package io.github.kei_1111.newsflow.library.stateful
+package io.github.kei_1111.newsflow.library.core.mvi.stateful
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.github.kei_1111.newsflow.library.UiAction
-import io.github.kei_1111.newsflow.library.UiEffect
+import io.github.kei_1111.newsflow.library.core.mvi.UiAction
+import io.github.kei_1111.newsflow.library.core.mvi.UiEffect
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow

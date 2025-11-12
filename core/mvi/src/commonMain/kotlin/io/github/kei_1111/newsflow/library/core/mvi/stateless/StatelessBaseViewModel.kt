@@ -1,8 +1,8 @@
-package io.github.kei_1111.newsflow.library.stateless
+package io.github.kei_1111.newsflow.library.core.mvi.stateless
 
 import androidx.lifecycle.ViewModel
-import io.github.kei_1111.newsflow.library.UiAction
-import io.github.kei_1111.newsflow.library.UiEffect
+import io.github.kei_1111.newsflow.library.core.mvi.UiAction
+import io.github.kei_1111.newsflow.library.core.mvi.UiEffect
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
