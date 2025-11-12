@@ -29,6 +29,7 @@ dependencyResolutionManagement {
     }
 }
 
+include(":core:model")
 include(":core:mvi")
 
 include(":shared")
