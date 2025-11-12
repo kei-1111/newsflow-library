@@ -7,6 +7,7 @@ import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.artifacts.dsl.DependencyHandler
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.plugin.use.PluginDependency
 
 internal fun DependencyHandler.implementation(dependencyNotation: Any): Dependency? =
     add("implementation", dependencyNotation)
@@ -28,3 +29,6 @@ internal fun VersionCatalog.versions(name: String): String =
 
 internal fun VersionCatalog.library(name: String): MinimalExternalModuleDependency =
     this.findLibrary(name).get().get()
+
+internal fun VersionCatalog.plugin(name: String): PluginDependency =
+    this.findPlugin(name).get().get()
