@@ -26,10 +26,6 @@ dependencies {
 
 gradlePlugin {
     plugins {
-        register("android") {
-            id = libs.plugins.newsflow.library.android.library.get().pluginId
-            implementationClass = "AndroidLibraryConventionPlugin"
-        }
         register("detekt") {
             id = libs.plugins.newsflow.library.detekt.get().pluginId
             implementationClass = "DetektConventionPlugin"
