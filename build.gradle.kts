@@ -5,4 +5,7 @@ plugins {
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kotlin.multiplatform) apply false
+
+    // Convention Plugins
+    alias(libs.plugins.newsflow.library.detekt) apply false
 }

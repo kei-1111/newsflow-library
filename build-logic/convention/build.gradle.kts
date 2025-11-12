@@ -23,3 +23,12 @@ dependencies {
     compileOnly(libs.detekt.gradle)
     compileOnly(libs.kotlin.gradle)
 }
+
+gradlePlugin {
+    plugins {
+        register("detekt") {
+            id = libs.plugins.newsflow.library.detekt.get().pluginId
+            implementationClass = "DetektConventionPlugin"
+        }
+    }
+}
