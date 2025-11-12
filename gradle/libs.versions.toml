@@ -17,11 +17,13 @@ detekt-gradle = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-p
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 
 [plugins]
+android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kmp = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 
 # Convention Plugins
 newsflow-library-android-library = { id = "newsflow.library.android.library" }
 newsflow-library-detekt = { id = "newsflow.library.detekt" }
+newsflow-library-kmp-library = { id = "newsflow.library.kmp.library" }
