@@ -1,7 +1,6 @@
 package io.github.kei_1111.newsflow.library.core.network.api
 
 import io.github.kei_1111.newsflow.library.core.network.core.defaultConfig
-import io.github.kei_1111.newsflow.library.core.network.model.NewsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
