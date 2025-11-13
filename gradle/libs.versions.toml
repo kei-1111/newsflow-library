@@ -5,11 +5,13 @@ android-minSdk = "29"
 android-targetSdk = "36"
 androidxLifecycle = "2.9.1"
 detekt = "1.23.8"
+koin = "4.1.2"
 kotlin = "2.2.20"
 
 [libraries]
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidxLifecycle" }
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
+koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
 
 # Plugins for build-logic
 android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
