@@ -4,6 +4,7 @@ android-compileSdk = "36"
 android-minSdk = "29"
 android-targetSdk = "36"
 androidxLifecycle = "2.9.1"
+buildKonfig = "0.15.2"
 detekt = "1.23.8"
 koin = "4.1.2"
 kotlin = "2.2.20"
@@ -29,6 +30,7 @@ kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin",
 
 [plugins]
 android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+build-konfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 kmp = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization" }
