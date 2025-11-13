@@ -7,11 +7,17 @@ androidxLifecycle = "2.9.1"
 detekt = "1.23.8"
 koin = "4.1.2"
 kotlin = "2.2.20"
+ktor = "3.3.2"
 
 [libraries]
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidxLifecycle" }
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
+ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
 
 # Plugins for build-logic
 android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
