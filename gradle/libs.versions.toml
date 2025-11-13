@@ -5,6 +5,7 @@ android-minSdk = "29"
 android-targetSdk = "36"
 androidxLifecycle = "2.9.1"
 buildKonfig = "0.15.2"
+coroutines = "1.10.2"
 detekt = "1.23.8"
 koin = "4.1.1"
 kotlin = "2.2.20"
@@ -22,6 +23,12 @@ ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref =
 ktor-client-darwin = { group = "io.ktor", name = "ktor-client-darwin", version.ref = "ktor" }
 ktor-client-okhttp = { group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+# Test libraries
+koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin" }
+kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
 
 # Plugins for build-logic
 android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
