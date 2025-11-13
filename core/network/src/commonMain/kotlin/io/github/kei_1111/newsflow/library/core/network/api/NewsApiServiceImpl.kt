@@ -9,7 +9,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 
-class NewsApiServiceImpl(
+internal class NewsApiServiceImpl(
     private val client: HttpClient,
 ) : NewsApiService {
     override suspend fun fetchTopHeadlines(
