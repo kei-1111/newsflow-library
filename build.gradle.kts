@@ -7,5 +7,6 @@ plugins {
 
     // Convention Plugins
     alias(libs.plugins.newsflow.library.detekt) apply false
+    alias(libs.plugins.newsflow.library.kmp.feature) apply false
     alias(libs.plugins.newsflow.library.kmp.library) apply false
 }
