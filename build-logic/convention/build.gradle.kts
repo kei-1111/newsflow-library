@@ -33,5 +33,9 @@ gradlePlugin {
             id = libs.plugins.newsflow.library.kmp.feature.get().pluginId
             implementationClass = "KmpFeatureConventionPlugin"
         }
+        register("mavenPublish") {
+            id = libs.plugins.newsflow.library.maven.publish.get().pluginId
+            implementationClass = "MavenPublishConventionPlugin"
+        }
     }
 }

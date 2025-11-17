@@ -11,6 +11,7 @@ detekt = "1.23.8"
 koin = "4.1.1"
 kotlin = "2.2.20"
 ktor = "3.3.2"
+newsflowLibrary = "0.1.1"
 serialization = "2.2.0"
 serializationJson = "1.8.1"
 
@@ -50,3 +51,4 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 newsflow-library-detekt = { id = "newsflow.library.detekt" }
 newsflow-library-kmp-feature = { id = "newsflow.library.kmp.feature" }
 newsflow-library-kmp-library = { id = "newsflow.library.kmp.library" }
+newsflow-library-maven-publish = { id = "newsflow.library.maven.publish" }
