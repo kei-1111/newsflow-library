@@ -35,4 +35,6 @@ include(":core:model")
 include(":core:mvi")
 include(":core:network")
 
+include(":feature:home")
+
 include(":shared")
