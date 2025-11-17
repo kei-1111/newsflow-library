@@ -1,6 +1,7 @@
 package io.github.kei_1111.newsflow.library.shared
 
 import io.github.kei_1111.newsflow.library.core.data.di.dataModule
+import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.HomeViewModel
 import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
@@ -10,7 +11,7 @@ import org.koin.core.context.startKoin
 
 actual fun initKoin(appContext: Any?) {
     startKoin {
-        modules(networkModule, dataModule, homeModule)
+        modules(networkModule, dataModule, domainModule, homeModule)
     }.koin
 }
 
