@@ -5,10 +5,10 @@ import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseC
 import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.TimeSource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 
 class HomeViewModel(
     private val fetchArticlesUseCase: FetchArticlesUseCase
@@ -56,7 +56,7 @@ class HomeViewModel(
     }
 
     override fun onAction(action: HomeUiAction) {
-        when(action) {
+        when (action) {
             is HomeUiAction.OnClickArticleCard -> {
                 sendEffect(HomeUiEffect.NavigateViewer(action.articleUiModel.url))
             }

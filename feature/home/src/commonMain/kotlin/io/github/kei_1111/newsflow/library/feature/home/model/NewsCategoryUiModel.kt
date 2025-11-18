@@ -11,7 +11,7 @@ enum class NewsCategoryUiModel {
     SCIENCE,
     HEALTH;
 
-    fun toNewsCategory(): NewsCategory = when(this) {
+    fun toNewsCategory(): NewsCategory = when (this) {
         GENERAL -> NewsCategory.GENERAL
         BUSINESS -> NewsCategory.BUSINESS
         TECHNOLOGY -> NewsCategory.TECHNOLOGY
@@ -22,7 +22,7 @@ enum class NewsCategoryUiModel {
     }
 
     companion object {
-        fun convert(newsCategory: NewsCategory): NewsCategoryUiModel = when(newsCategory) {
+        fun convert(newsCategory: NewsCategory): NewsCategoryUiModel = when (newsCategory) {
             NewsCategory.GENERAL -> GENERAL
             NewsCategory.BUSINESS -> BUSINESS
             NewsCategory.TECHNOLOGY -> TECHNOLOGY

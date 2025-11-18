@@ -1,8 +1,8 @@
 package io.github.kei_1111.newsflow.library.feature.home
 
+import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
-import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
 import io.github.kei_1111.newsflow.library.feature.home.model.ArticleUiModel
 import io.github.kei_1111.newsflow.library.feature.home.model.NewsCategoryUiModel
@@ -13,9 +13,9 @@ data class HomeViewModelState(
     val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     val error: NewsflowError? = null,
 ) : ViewModelState<HomeUiState> {
-    enum class StatusType { IDLE, LOADING, STABLE, ERROR}
+    enum class StatusType { IDLE, LOADING, STABLE, ERROR }
 
-    override fun toState(): HomeUiState = when(statusType) {
+    override fun toState(): HomeUiState = when (statusType) {
         StatusType.IDLE -> HomeUiState.Init
 
         StatusType.LOADING -> HomeUiState.Loading

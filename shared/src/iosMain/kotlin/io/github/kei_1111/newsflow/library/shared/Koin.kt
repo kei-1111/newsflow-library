@@ -15,6 +15,6 @@ actual fun initKoin(appContext: Any?) {
     }.koin
 }
 
-object ViewModelProvider: KoinComponent {
+object ViewModelProvider : KoinComponent {
     fun provideHomeViewModel(): HomeViewModel = get()
 }
