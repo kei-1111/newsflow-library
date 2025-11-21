@@ -3,6 +3,7 @@ package io.github.kei_1111.newsflow.library.feature.home
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
+import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
 import io.github.kei_1111.newsflow.library.core.model.toType
@@ -37,14 +38,15 @@ class HomeViewModel(
                     }
                 }
                 .onFailure { error ->
-                    // TODO: KMP対応のロガーで出力
                     val errorType = when (val newsflowError = error as? NewsflowError) {
                         null -> {
-                            // 未知のエラーの場合
-                            // TODO: ログ出力
+                            Logger.e(TAG, "Unknown error occurred while fetching articles", error)
                             NewsflowErrorType.Unknown
                         }
-                        else -> newsflowError.toType()
+                        else -> {
+                            Logger.e(TAG, "Failed to fetch articles: ${newsflowError.message}", newsflowError)
+                            newsflowError.toType()
+                        }
                     }
                     ensureMinimumLoadingTime(startMark)
                     updateViewModelState {
@@ -78,5 +80,9 @@ class HomeViewModel(
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "HomeViewModel"
     }
 }

@@ -19,6 +19,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                         api(project(":core:mvi"))
                         api(project(":core:model"))
                         implementation(project(":core:domain"))
+                        implementation(project(":core:logger"))
 
                         implementation(libs.library("koin.core"))
                         implementation(libs.library("koin.compose.viewmodel"))
