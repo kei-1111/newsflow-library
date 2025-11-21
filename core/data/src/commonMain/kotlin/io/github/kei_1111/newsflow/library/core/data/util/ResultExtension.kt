@@ -1,6 +1,6 @@
 package io.github.kei_1111.newsflow.library.core.data.util
 
-import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
+import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.network.exception.NetworkException
 
 internal fun Throwable.toNewsflowError(): NewsflowError = when (this) {

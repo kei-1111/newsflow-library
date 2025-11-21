@@ -2,11 +2,9 @@ package io.github.kei_1111.newsflow.library.feature.home
 
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
-import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
+import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
-import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
-import io.github.kei_1111.newsflow.library.core.model.toType
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
 import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
@@ -38,21 +36,13 @@ class HomeViewModel(
                     }
                 }
                 .onFailure { error ->
-                    val errorType = when (val newsflowError = error as? NewsflowError) {
-                        null -> {
-                            Logger.e(TAG, "Unknown error occurred while fetching articles", error)
-                            NewsflowErrorType.Unknown
-                        }
-                        else -> {
-                            Logger.e(TAG, "Failed to fetch articles: ${newsflowError.message}", newsflowError)
-                            newsflowError.toType()
-                        }
-                    }
+                    Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)
+
                     ensureMinimumLoadingTime(startMark)
                     updateViewModelState {
                         copy(
                             statusType = HomeViewModelState.StatusType.ERROR,
-                            errorType = errorType
+                            error = error as? NewsflowError
                         )
                     }
                 }

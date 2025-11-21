@@ -1,4 +1,4 @@
-package io.github.kei_1111.newsflow.library.core.exception
+package io.github.kei_1111.newsflow.library.core.model
 
 sealed class NewsflowError(message: String) : Exception(message) {
     data class Unauthorized(override val message: String = "Invalid API key") : NewsflowError(message)

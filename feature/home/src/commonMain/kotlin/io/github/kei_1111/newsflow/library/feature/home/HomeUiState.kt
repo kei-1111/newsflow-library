@@ -2,7 +2,7 @@ package io.github.kei_1111.newsflow.library.feature.home
 
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
-import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
+import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.UiState
 
 sealed interface HomeUiState : UiState {
@@ -16,6 +16,6 @@ sealed interface HomeUiState : UiState {
     ) : HomeUiState
 
     data class Error(
-        val errorType: NewsflowErrorType,
+        val error: NewsflowError,
     ) : HomeUiState
 }
