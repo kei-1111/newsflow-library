@@ -31,6 +31,7 @@ dependencyResolutionManagement {
 
 include(":core:data")
 include(":core:domain")
+include(":core:logger")
 include(":core:model")
 include(":core:mvi")
 include(":core:network")
