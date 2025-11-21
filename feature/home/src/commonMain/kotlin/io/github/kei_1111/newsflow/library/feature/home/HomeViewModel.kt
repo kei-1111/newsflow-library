@@ -7,9 +7,7 @@ import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
 import io.github.kei_1111.newsflow.library.core.model.toType
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeSource
 
 class HomeViewModel(
@@ -59,13 +57,6 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun ensureMinimumLoadingTime(startMark: TimeSource.Monotonic.ValueTimeMark) {
-        val elapsed = startMark.elapsedNow()
-        if (elapsed < MIN_LOADING_TIME) {
-            delay(MIN_LOADING_TIME - elapsed)
-        }
-    }
-
     override fun onUiAction(uiAction: HomeUiAction) {
         when (uiAction) {
             is HomeUiAction.OnClickArticleCard -> {
@@ -87,9 +78,5 @@ class HomeViewModel(
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
         }
-    }
-
-    private companion object {
-        val MIN_LOADING_TIME = 500.milliseconds
     }
 }

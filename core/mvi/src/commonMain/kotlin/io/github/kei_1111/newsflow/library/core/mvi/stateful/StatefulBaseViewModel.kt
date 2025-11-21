@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.mvi.UiAction
 import io.github.kei_1111.newsflow.library.core.mvi.UiEffect
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,6 +14,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 
 @Suppress("VariableNaming")
 abstract class StatefulBaseViewModel<VS : ViewModelState<S>, S : UiState, A : UiAction, E : UiEffect> : ViewModel() {
@@ -42,7 +46,18 @@ abstract class StatefulBaseViewModel<VS : ViewModelState<S>, S : UiState, A : Ui
         _uiEffect.trySend(uiEffect)
     }
 
+    protected suspend fun ensureMinimumLoadingTime(
+        startMark: TimeSource.Monotonic.ValueTimeMark,
+        minimumLoadingTime: Duration = DEFAULT_MIN_LOADING_TIME
+    ) {
+        val elapsed = startMark.elapsedNow()
+        if (elapsed < minimumLoadingTime) {
+            delay(minimumLoadingTime - elapsed)
+        }
+    }
+
     private companion object {
         const val STOP_TIMEOUT_MILLIS = 5_000L
+        val DEFAULT_MIN_LOADING_TIME = 500.milliseconds
     }
 }
