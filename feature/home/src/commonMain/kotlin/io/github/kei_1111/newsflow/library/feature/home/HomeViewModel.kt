@@ -66,14 +66,14 @@ class HomeViewModel(
         }
     }
 
-    override fun onAction(action: HomeUiAction) {
-        when (action) {
+    override fun onUiAction(uiAction: HomeUiAction) {
+        when (uiAction) {
             is HomeUiAction.OnClickArticleCard -> {
-                sendEffect(HomeUiEffect.NavigateViewer(action.article.url))
+                sendUiEffect(HomeUiEffect.NavigateViewer(uiAction.article.url))
             }
 
             is HomeUiAction.OnSwipNewsCategoryPage -> {
-                val newCategory = action.newsCategory
+                val newCategory = uiAction.newsCategory
 
                 updateViewModelState {
                     copy(currentNewsCategory = newCategory)

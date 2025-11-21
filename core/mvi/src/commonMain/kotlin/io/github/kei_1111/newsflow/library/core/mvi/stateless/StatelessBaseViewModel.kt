@@ -10,12 +10,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 @Suppress("VariableNaming")
 abstract class StatelessBaseViewModel<A : UiAction, E : UiEffect> : ViewModel() {
 
-    protected val _effect = Channel<E>(Channel.BUFFERED)
-    val effect: Flow<E> = _effect.receiveAsFlow()
+    protected val _uiEffect = Channel<E>(Channel.BUFFERED)
+    val uiEffect: Flow<E> = _uiEffect.receiveAsFlow()
 
-    abstract fun onAction(action: A)
+    abstract fun onUiAction(uiAction: A)
 
-    protected fun sendEffect(effect: E) {
-        _effect.trySend(effect)
+    protected fun sendUiEffect(uiEffect: E) {
+        _uiEffect.trySend(uiEffect)
     }
 }

@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.update
 abstract class StatefulBaseViewModel<VS : ViewModelState<S>, S : UiState, A : UiAction, E : UiEffect> : ViewModel() {
 
     protected val _viewModelState = MutableStateFlow<VS>(createInitialViewModelState())
-    val state: StateFlow<S> = _viewModelState
+    val uiState: StateFlow<S> = _viewModelState
         .map(ViewModelState<S>::toState)
         .stateIn(
             scope = viewModelScope,
@@ -26,20 +26,20 @@ abstract class StatefulBaseViewModel<VS : ViewModelState<S>, S : UiState, A : Ui
             initialValue = createInitialUiState(),
         )
 
-    protected val _effect = Channel<E>(Channel.BUFFERED)
-    val effect: Flow<E> = _effect.receiveAsFlow()
+    protected val _uiEffect = Channel<E>(Channel.BUFFERED)
+    val uiEffect: Flow<E> = _uiEffect.receiveAsFlow()
 
     protected abstract fun createInitialViewModelState(): VS
     protected abstract fun createInitialUiState(): S
 
-    abstract fun onAction(action: A)
+    abstract fun onUiAction(uiAction: A)
 
     protected fun updateViewModelState(update: VS.() -> VS) {
         _viewModelState.update { update(it) }
     }
 
-    protected fun sendEffect(effect: E) {
-        _effect.trySend(effect)
+    protected fun sendUiEffect(uiEffect: E) {
+        _uiEffect.trySend(uiEffect)
     }
 
     private companion object {
