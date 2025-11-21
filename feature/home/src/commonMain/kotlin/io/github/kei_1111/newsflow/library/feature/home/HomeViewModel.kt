@@ -4,6 +4,8 @@ import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.exception.NewsflowError
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
+import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
+import io.github.kei_1111.newsflow.library.core.model.toType
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -37,11 +39,20 @@ class HomeViewModel(
                     }
                 }
                 .onFailure { error ->
+                    // TODO: KMP対応のロガーで出力
+                    val errorType = when (val newsflowError = error as? NewsflowError) {
+                        null -> {
+                            // 未知のエラーの場合
+                            // TODO: ログ出力
+                            NewsflowErrorType.Unknown
+                        }
+                        else -> newsflowError.toType()
+                    }
                     ensureMinimumLoadingTime(startMark)
                     updateViewModelState {
                         copy(
                             statusType = HomeViewModelState.StatusType.ERROR,
-                            error = error as? NewsflowError
+                            errorType = errorType
                         )
                     }
                 }
@@ -58,11 +69,11 @@ class HomeViewModel(
     override fun onAction(action: HomeUiAction) {
         when (action) {
             is HomeUiAction.OnClickArticleCard -> {
-                sendEffect(HomeUiEffect.NavigateViewer(action.articleUiModel.url))
+                sendEffect(HomeUiEffect.NavigateViewer(action.article.url))
             }
 
             is HomeUiAction.OnSwipNewsCategoryPage -> {
-                val newCategory = action.newsCategoryUiModel.toNewsCategory()
+                val newCategory = action.newsCategory
 
                 updateViewModelState {
                     copy(currentNewsCategory = newCategory)

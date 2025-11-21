@@ -1,8 +1,9 @@
 package io.github.kei_1111.newsflow.library.feature.home
 
+import io.github.kei_1111.newsflow.library.core.model.Article
+import io.github.kei_1111.newsflow.library.core.model.NewsCategory
+import io.github.kei_1111.newsflow.library.core.model.NewsflowErrorType
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.UiState
-import io.github.kei_1111.newsflow.library.feature.home.model.ArticleUiModel
-import io.github.kei_1111.newsflow.library.feature.home.model.NewsCategoryUiModel
 
 sealed interface HomeUiState : UiState {
     data object Init : HomeUiState
@@ -10,11 +11,11 @@ sealed interface HomeUiState : UiState {
     data object Loading : HomeUiState
 
     data class Stable(
-        val currentNewsCategoryUiModel: NewsCategoryUiModel,
-        val articlesByCategory: Map<NewsCategoryUiModel, List<ArticleUiModel>>,
+        val currentNewsCategory: NewsCategory,
+        val articlesByCategory: Map<NewsCategory, List<Article>>,
     ) : HomeUiState
 
     data class Error(
-        val message: String,
+        val errorType: NewsflowErrorType,
     ) : HomeUiState
 }

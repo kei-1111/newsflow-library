@@ -17,8 +17,8 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                 sourceSets.apply {
                     commonMain.dependencies {
                         api(project(":core:mvi"))
+                        api(project(":core:model"))
                         implementation(project(":core:domain"))
-                        implementation(project(":core:model"))
 
                         implementation(libs.library("koin.core"))
                         implementation(libs.library("koin.compose.viewmodel"))
