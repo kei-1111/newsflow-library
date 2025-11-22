@@ -9,5 +9,7 @@ sealed interface HomeUiAction : UiAction {
 
     data class OnSwipNewsCategoryPage(val newsCategory: NewsCategory) : HomeUiAction
 
+    data class OnClickNewsCategoryTag(val newsCategory: NewsCategory) : HomeUiAction
+
     data object OnClickRetryButton : HomeUiAction
 }

@@ -66,6 +66,17 @@ class HomeViewModel(
                 }
             }
 
+            is HomeUiAction.OnClickNewsCategoryTag -> {
+                val newCategory = uiAction.newsCategory
+
+                updateViewModelState {
+                    copy(currentNewsCategory = newCategory)
+                }
+                if (_viewModelState.value.articlesByCategory[newCategory] == null) {
+                    fetchArticles(newCategory)
+                }
+            }
+
             is HomeUiAction.OnClickRetryButton -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
