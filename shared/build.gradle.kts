@@ -17,6 +17,7 @@ kotlin {
             implementation(projects.core.network)
 
             // iOSで使用したいモジュールはapiとしてエクスポートする
+            api(projects.core.model)
             api(projects.feature.home)
 
             implementation(libs.koin.core)
