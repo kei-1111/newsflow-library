@@ -11,7 +11,7 @@ detekt = "1.23.8"
 koin = "4.1.1"
 kotlin = "2.2.20"
 ktor = "3.3.2"
-newsflowLibrary = "0.1.2"
+newsflowLibrary = "0.1.3"
 serialization = "2.2.0"
 serializationJson = "1.8.1"
 
