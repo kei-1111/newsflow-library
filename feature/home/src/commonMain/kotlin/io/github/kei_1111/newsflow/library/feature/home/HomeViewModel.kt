@@ -33,7 +33,12 @@ class HomeViewModel(
             fetchArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
                     ensureMinimumLoadingTime(startMark)
-                    updateViewModelState { copy(articlesByCategory = articlesByCategory + (category to data)) }
+                    updateViewModelState {
+                        copy(
+                            isLoading = false,
+                            articlesByCategory = articlesByCategory + (category to data)
+                        )
+                    }
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)
@@ -42,6 +47,7 @@ class HomeViewModel(
                     updateViewModelState {
                         copy(
                             statusType = HomeViewModelState.StatusType.ERROR,
+                            isLoading = false,
                             error = error as? NewsflowError
                         )
                     }
