@@ -21,19 +21,19 @@ class HomeViewModel(
     }
 
     private fun fetchArticles(category: NewsCategory) {
-        updateViewModelState { copy(statusType = HomeViewModelState.StatusType.LOADING) }
+        updateViewModelState {
+            copy(
+                statusType = HomeViewModelState.StatusType.STABLE,
+                isLoading = true,
+            )
+        }
         viewModelScope.launch {
             val startMark = TimeSource.Monotonic.markNow()
 
             fetchArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
                     ensureMinimumLoadingTime(startMark)
-                    updateViewModelState {
-                        copy(
-                            statusType = HomeViewModelState.StatusType.STABLE,
-                            articlesByCategory = articlesByCategory + (category to data)
-                        )
-                    }
+                    updateViewModelState { copy(articlesByCategory = articlesByCategory + (category to data)) }
                 }
                 .onFailure { error ->
                     Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)

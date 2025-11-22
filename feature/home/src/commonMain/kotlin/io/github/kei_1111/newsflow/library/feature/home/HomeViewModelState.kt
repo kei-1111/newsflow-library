@@ -6,19 +6,19 @@ import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
 
 data class HomeViewModelState(
-    val statusType: StatusType = StatusType.IDLE,
+    val statusType: StatusType = StatusType.INIT,
+    val isLoading: Boolean = false,
     val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
     val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     val error: NewsflowError? = null,
 ) : ViewModelState<HomeUiState> {
-    enum class StatusType { IDLE, LOADING, STABLE, ERROR }
+    enum class StatusType { INIT, STABLE, ERROR }
 
     override fun toState(): HomeUiState = when (statusType) {
-        StatusType.IDLE -> HomeUiState.Init
-
-        StatusType.LOADING -> HomeUiState.Loading
+        StatusType.INIT -> HomeUiState.Init
 
         StatusType.STABLE -> HomeUiState.Stable(
+            isLoading = isLoading,
             currentNewsCategory = currentNewsCategory,
             articlesByCategory = articlesByCategory
         )
