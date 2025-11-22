@@ -2,9 +2,9 @@ package io.github.kei_1111.newsflow.library.feature.home
 
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
-import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
+import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
 import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
