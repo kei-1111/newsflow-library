@@ -6,12 +6,10 @@ import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.UiState
 
 sealed interface HomeUiState : UiState {
-    data object Init : HomeUiState
-
     data class Stable(
-        val isLoading: Boolean,
-        val currentNewsCategory: NewsCategory,
-        val articlesByCategory: Map<NewsCategory, List<Article>>,
+        val isLoading: Boolean = false,
+        val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
+        val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     ) : HomeUiState
 
     data class Error(

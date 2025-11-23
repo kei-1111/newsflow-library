@@ -14,7 +14,7 @@ class HomeViewModel(
 ) : StatefulBaseViewModel<HomeViewModelState, HomeUiState, HomeUiAction, HomeUiEffect>() {
 
     override fun createInitialViewModelState(): HomeViewModelState = HomeViewModelState()
-    override fun createInitialUiState(): HomeUiState = HomeUiState.Init
+    override fun createInitialUiState(): HomeUiState = HomeUiState.Stable()
 
     init {
         fetchArticles(_viewModelState.value.currentNewsCategory)
