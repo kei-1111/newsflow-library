@@ -3,6 +3,7 @@ package io.github.kei_1111.newsflow.library.feature.home
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.logger.Logger
+import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
@@ -20,41 +21,6 @@ class HomeViewModel(
         fetchArticles(_viewModelState.value.currentNewsCategory)
     }
 
-    private fun fetchArticles(category: NewsCategory) {
-        updateViewModelState {
-            copy(
-                statusType = HomeViewModelState.StatusType.STABLE,
-                isLoading = true,
-            )
-        }
-        viewModelScope.launch {
-            val startMark = TimeSource.Monotonic.markNow()
-
-            fetchArticlesUseCase.invoke(category.value)
-                .onSuccess { data ->
-                    ensureMinimumLoadingTime(startMark)
-                    updateViewModelState {
-                        copy(
-                            isLoading = false,
-                            articlesByCategory = articlesByCategory + (category to data)
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)
-
-                    ensureMinimumLoadingTime(startMark)
-                    updateViewModelState {
-                        copy(
-                            statusType = HomeViewModelState.StatusType.ERROR,
-                            isLoading = false,
-                            error = error as? NewsflowError
-                        )
-                    }
-                }
-        }
-    }
-
     override fun onUiAction(uiAction: HomeUiAction) {
         when (uiAction) {
             is HomeUiAction.OnClickArticleCard -> {
@@ -62,30 +28,78 @@ class HomeViewModel(
             }
 
             is HomeUiAction.OnSwipNewsCategoryPage -> {
-                val newCategory = uiAction.newsCategory
-
-                updateViewModelState {
-                    copy(currentNewsCategory = newCategory)
-                }
-                if (_viewModelState.value.articlesByCategory[newCategory] == null) {
-                    fetchArticles(newCategory)
-                }
+                changeNewsCategory(uiAction.newsCategory)
             }
 
             is HomeUiAction.OnClickNewsCategoryTag -> {
-                val newCategory = uiAction.newsCategory
-
-                updateViewModelState {
-                    copy(currentNewsCategory = newCategory)
-                }
-                if (_viewModelState.value.articlesByCategory[newCategory] == null) {
-                    fetchArticles(newCategory)
-                }
+                changeNewsCategory(uiAction.newsCategory)
             }
 
             is HomeUiAction.OnClickRetryButton -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
+        }
+    }
+
+    private fun changeNewsCategory(newCategory: NewsCategory) {
+        updateViewModelState {
+            copy(currentNewsCategory = newCategory)
+        }
+        if (_viewModelState.value.articlesByCategory[newCategory] == null) {
+            fetchArticles(newCategory)
+        }
+    }
+
+    private fun fetchArticles(category: NewsCategory) {
+        setLoadingState()
+        viewModelScope.launch {
+            val startMark = TimeSource.Monotonic.markNow()
+
+            fetchArticlesUseCase.invoke(category.value)
+                .onSuccess { data ->
+                    handleFetchSuccess(category, data, startMark)
+                }
+                .onFailure { error ->
+                    handleFetchError(error, startMark)
+                }
+        }
+    }
+
+    private fun setLoadingState() {
+        updateViewModelState {
+            copy(
+                statusType = HomeViewModelState.StatusType.STABLE,
+                isLoading = true,
+            )
+        }
+    }
+
+    private suspend fun handleFetchSuccess(
+        category: NewsCategory,
+        data: List<Article>,
+        startMark: TimeSource.Monotonic.ValueTimeMark
+    ) {
+        ensureMinimumLoadingTime(startMark)
+        updateViewModelState {
+            copy(
+                isLoading = false,
+                articlesByCategory = articlesByCategory + (category to data)
+            )
+        }
+    }
+
+    private suspend fun handleFetchError(
+        error: Throwable,
+        startMark: TimeSource.Monotonic.ValueTimeMark
+    ) {
+        Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)
+        ensureMinimumLoadingTime(startMark)
+        updateViewModelState {
+            copy(
+                statusType = HomeViewModelState.StatusType.ERROR,
+                isLoading = false,
+                error = error as? NewsflowError
+            )
         }
     }
 
