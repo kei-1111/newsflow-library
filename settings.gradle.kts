@@ -35,6 +35,7 @@ include(":core:logger")
 include(":core:model")
 include(":core:mvi")
 include(":core:network")
+include(":core:test")
 
 include(":feature:home")
 
