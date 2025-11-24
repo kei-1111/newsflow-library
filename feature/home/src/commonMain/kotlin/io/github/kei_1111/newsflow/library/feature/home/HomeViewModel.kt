@@ -57,10 +57,10 @@ class HomeViewModel(
 
             fetchArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
-                    handleFetchSuccess(category, data, startMark)
+                    handleFetchArticleSuccess(category, data, startMark)
                 }
                 .onFailure { error ->
-                    handleFetchError(error, startMark)
+                    handleFetchArticleError(error, startMark)
                 }
         }
     }
@@ -74,7 +74,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchSuccess(
+    private suspend fun handleFetchArticleSuccess(
         category: NewsCategory,
         data: List<Article>,
         startMark: TimeSource.Monotonic.ValueTimeMark
@@ -88,7 +88,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchError(
+    private suspend fun handleFetchArticleError(
         error: Throwable,
         startMark: TimeSource.Monotonic.ValueTimeMark
     ) {
