@@ -10,7 +10,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-class FetchArticlesUseCaseImplTest {
+class FetchTopHeadlineArticlesUseCaseImplTest {
 
     private lateinit var newsRepository: FakeNewsRepository
 
@@ -23,7 +23,7 @@ class FetchArticlesUseCaseImplTest {
     fun `invoke returns success when repository returns success`() = runTest {
         val articles = createTestArticles(3)
         newsRepository.setResult(Result.success(articles))
-        val useCase = FetchArticlesUseCaseImpl(newsRepository)
+        val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
@@ -35,7 +35,7 @@ class FetchArticlesUseCaseImplTest {
     fun `invoke returns failure when repository returns failure`() = runTest {
         val error = NewsflowError.NetworkFailure("Network error")
         newsRepository.setResult(Result.failure(error))
-        val useCase = FetchArticlesUseCaseImpl(newsRepository)
+        val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
@@ -49,7 +49,7 @@ class FetchArticlesUseCaseImplTest {
     fun `invoke propagates Unauthorized error from repository`() = runTest {
         val error = NewsflowError.Unauthorized("Invalid API key")
         newsRepository.setResult(Result.failure(error))
-        val useCase = FetchArticlesUseCaseImpl(newsRepository)
+        val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
@@ -61,7 +61,7 @@ class FetchArticlesUseCaseImplTest {
     fun `invoke propagates RateLimitExceeded error from repository`() = runTest {
         val error = NewsflowError.RateLimitExceeded("Rate limit exceeded")
         newsRepository.setResult(Result.failure(error))
-        val useCase = FetchArticlesUseCaseImpl(newsRepository)
+        val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
@@ -73,7 +73,7 @@ class FetchArticlesUseCaseImplTest {
     fun `invoke propagates ServerError from repository`() = runTest {
         val error = NewsflowError.ServerError("Internal server error")
         newsRepository.setResult(Result.failure(error))
-        val useCase = FetchArticlesUseCaseImpl(newsRepository)
+        val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 

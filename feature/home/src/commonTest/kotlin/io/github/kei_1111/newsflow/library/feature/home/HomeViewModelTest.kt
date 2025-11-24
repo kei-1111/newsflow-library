@@ -6,7 +6,7 @@ import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
 import io.github.kei_1111.newsflow.library.core.test.model.createTestArticles
-import io.github.kei_1111.newsflow.library.core.test.usecase.FakeFetchArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.test.usecase.FakeFetchTopHeadlineArticlesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,12 +25,12 @@ import kotlin.test.assertTrue
 class HomeViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var fetchArticlesUseCase: FakeFetchArticlesUseCase
+    private lateinit var fetchArticlesUseCase: FakeFetchTopHeadlineArticlesUseCase
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        fetchArticlesUseCase = FakeFetchArticlesUseCase()
+        fetchArticlesUseCase = FakeFetchTopHeadlineArticlesUseCase()
     }
 
     @AfterTest

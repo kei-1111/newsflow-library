@@ -3,7 +3,7 @@ package io.github.kei_1111.newsflow.library.shared
 import io.github.kei_1111.newsflow.library.core.data.di.dataModule
 import io.github.kei_1111.newsflow.library.core.data.repository.NewsRepository
 import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
-import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.network.api.NewsApiService
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.HomeViewModel
@@ -56,9 +56,9 @@ class KoinModuleTest : KoinTest {
     }
 
     @Test
-    fun `verify FetchArticlesUseCase can be resolved`() {
-        val fetchArticlesUseCase = get<FetchArticlesUseCase>()
-        assertNotNull(fetchArticlesUseCase)
+    fun `verify FetchTopHeadlineArticlesUseCase can be resolved`() {
+        val fetchTopHeadlineArticlesUseCase = get<FetchTopHeadlineArticlesUseCase>()
+        assertNotNull(fetchTopHeadlineArticlesUseCase)
     }
 
     @Test

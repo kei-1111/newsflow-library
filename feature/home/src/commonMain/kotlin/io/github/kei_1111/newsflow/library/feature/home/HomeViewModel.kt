@@ -1,7 +1,7 @@
 package io.github.kei_1111.newsflow.library.feature.home
 
 import androidx.lifecycle.viewModelScope
-import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlin.time.TimeSource
 
 class HomeViewModel(
-    private val fetchArticlesUseCase: FetchArticlesUseCase
+    private val fetchTopHeadlineArticlesUseCase: FetchTopHeadlineArticlesUseCase
 ) : StatefulBaseViewModel<HomeViewModelState, HomeUiState, HomeUiAction, HomeUiEffect>() {
 
     override fun createInitialViewModelState(): HomeViewModelState = HomeViewModelState()
@@ -55,12 +55,12 @@ class HomeViewModel(
         viewModelScope.launch {
             val startMark = TimeSource.Monotonic.markNow()
 
-            fetchArticlesUseCase.invoke(category.value)
+            fetchTopHeadlineArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
-                    handleFetchArticleSuccess(category, data, startMark)
+                    handleFetchTopHeadlineArticlesSuccess(category, data, startMark)
                 }
                 .onFailure { error ->
-                    handleFetchArticleError(error, startMark)
+                    handleFetchTopHeadlineArticlesError(error, startMark)
                 }
         }
     }
@@ -74,7 +74,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchArticleSuccess(
+    private suspend fun handleFetchTopHeadlineArticlesSuccess(
         category: NewsCategory,
         data: List<Article>,
         startMark: TimeSource.Monotonic.ValueTimeMark
@@ -88,7 +88,7 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchArticleError(
+    private suspend fun handleFetchTopHeadlineArticlesError(
         error: Throwable,
         startMark: TimeSource.Monotonic.ValueTimeMark
     ) {
