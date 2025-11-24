@@ -1,10 +1,12 @@
 package io.github.kei_1111.newsflow.library.feature.home
 
+import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
-import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchArticlesUseCase
-import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
+import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
+import io.github.kei_1111.newsflow.library.core.test.model.createTestArticles
+import io.github.kei_1111.newsflow.library.core.test.usecase.FakeFetchArticlesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -15,6 +17,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
@@ -36,7 +39,41 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `onClickArticleCard sends NavigateViewer effect`() = runTest {
+    fun `initialization fetches GENERAL category articles successfully`() = runTest {
+        val articles = createTestArticles(3)
+        fetchArticlesUseCase.setResult(Result.success(articles))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.uiState.test {
+            skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
+            testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
+
+            val successState = awaitItem()
+            assertIs<HomeUiState.Stable>(successState)
+            assertFalse(successState.isLoading)
+            assertEquals(NewsCategory.GENERAL, successState.currentNewsCategory)
+            assertEquals(articles, successState.articlesByCategory[NewsCategory.GENERAL])
+        }
+    }
+
+    @Test
+    fun `initialization fails to fetch articles and transitions to error state`() = runTest {
+        val error = NewsflowError.NetworkFailure("Network Error")
+        fetchArticlesUseCase.setResult(Result.failure(error))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.uiState.test {
+            skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
+            testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
+
+            val errorState = awaitItem()
+            assertIs<HomeUiState.Error>(errorState)
+            assertEquals(error, errorState.error)
+        }
+    }
+
+    @Test
+    fun `onClickArticleCard emits NavigateViewer effect with article url`() = runTest {
         fetchArticlesUseCase.setResult(Result.success(emptyList()))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
@@ -51,16 +88,14 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `onSwipNewsCategoryPage calls changeNewsCategory and Success`() = runTest {
+    fun `onSwipeNewsCategoryPage changes category and fetches articles successfully`() = runTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.TECHNOLOGY
         fetchArticlesUseCase.setResult(Result.success(articles))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
             viewModel.onUiAction(HomeUiAction.OnSwipNewsCategoryPage(category))
 
@@ -70,22 +105,21 @@ class HomeViewModelTest {
 
             val successState = awaitItem()
             assertIs<HomeUiState.Stable>(successState)
-            assertEquals(category, successState.currentNewsCategory) // changeNewsCategory was called
+            assertFalse(successState.isLoading)
+            assertEquals(category, successState.currentNewsCategory)
             assertEquals(articles, successState.articlesByCategory[category])
         }
     }
 
     @Test
-    fun `onSwipNewsCategoryPage calls changeNewsCategory and Error`() = runTest {
+    fun `onSwipeNewsCategoryPage changes category but fails to fetch articles`() = runTest {
         val error = NewsflowError.NetworkFailure("Network Error")
         val category = NewsCategory.TECHNOLOGY
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
             viewModel.onUiAction(HomeUiAction.OnSwipNewsCategoryPage(category))
 
@@ -100,16 +134,14 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `onClickNewsCategoryTag calls changeNewsCategory and Success`() = runTest {
+    fun `onClickNewsCategoryTag changes category and fetches articles successfully`() = runTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.BUSINESS
         fetchArticlesUseCase.setResult(Result.success(articles))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
             viewModel.onUiAction(HomeUiAction.OnClickNewsCategoryTag(category))
 
@@ -119,24 +151,23 @@ class HomeViewModelTest {
 
             val successState = awaitItem()
             assertIs<HomeUiState.Stable>(successState)
-            assertEquals(category, successState.currentNewsCategory) // changeNewsCategory was called
+            assertFalse(successState.isLoading)
+            assertEquals(category, successState.currentNewsCategory)
             assertEquals(articles, successState.articlesByCategory[category])
         }
     }
 
     @Test
-    fun `onClickNewsCategoryTag calls changeNewsCategory and Error`() = runTest {
+    fun `onClickNewsCategoryTag changes category but fails to fetch articles`() = runTest {
         val error = NewsflowError.NetworkFailure("Network Error")
         val category = NewsCategory.BUSINESS
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
-            viewModel.onUiAction(HomeUiAction.OnSwipNewsCategoryPage(category))
+            viewModel.onUiAction(HomeUiAction.OnClickNewsCategoryTag(category))
 
             val loadingState = awaitItem()
             assertIs<HomeUiState.Stable>(loadingState)
@@ -149,16 +180,14 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `onClickRetryButton calls fetchArticles and Success`() = runTest {
+    fun `onClickRetryButton refetches current category articles successfully`() = runTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.GENERAL // default Category
         fetchArticlesUseCase.setResult(Result.success(articles))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
             viewModel.onUiAction(HomeUiAction.OnClickRetryButton)
 
@@ -168,21 +197,20 @@ class HomeViewModelTest {
 
             val successState = awaitItem()
             assertIs<HomeUiState.Stable>(successState)
+            assertFalse(successState.isLoading)
             assertEquals(category, successState.currentNewsCategory)
             assertEquals(articles, successState.articlesByCategory[category])
         }
     }
 
     @Test
-    fun `onClickRetryButton calls fetchArticles and Error`() = runTest {
+    fun `onClickRetryButton refetches articles but fails`() = runTest {
         val error = NewsflowError.NetworkFailure("Network error")
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // createUiState + init -> fetch -> setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init -> fetch -> UseCase
-            skipItems(1) // init -> fetch -> handleSuccess
+            skipInitialization()
 
             viewModel.onUiAction(HomeUiAction.OnClickRetryButton)
 
@@ -196,35 +224,9 @@ class HomeViewModelTest {
         }
     }
 
-    private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
-        id = "$index",
-        source = "$prefix Source $index",
-        author = "$prefix Author $index",
-        title = "$prefix Title $index",
-        description = "$prefix Description $index",
-        url = "https://example.com/$prefix-$index",
-        imageUrl = "https://example.com/image-$index.jpg",
-        publishedAt = 1234567890000L + index,
-    )
-
-    private fun createTestArticles(count: Int, prefix: String = "Test") =
-        List(count) { createTestArticle(it + 1, prefix) }
-
-    private class FakeFetchArticlesUseCase : FetchArticlesUseCase {
-        private var result: Result<List<Article>> = Result.success(emptyList())
-        var invocationCount = 0
-            private set
-        var lastCategory: String = ""
-            private set
-
-        fun setResult(result: Result<List<Article>>) {
-            this.result = result
-        }
-
-        override suspend fun invoke(category: String): Result<List<Article>> {
-            invocationCount++
-            lastCategory = category
-            return result
-        }
+    private suspend fun <T> ReceiveTurbine<T>.skipInitialization() {
+        skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
+        testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
+        skipItems(1) // init->fetch->handleXXXX
     }
 }
