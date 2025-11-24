@@ -14,6 +14,7 @@ ktor = "3.3.2"
 newsflowLibrary = "0.1.4"
 serialization = "2.2.0"
 serializationJson = "1.8.1"
+turbine = "1.2.1"
 
 [libraries]
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidxLifecycle" }
@@ -34,6 +35,7 @@ koin-test = { group = "io.insert-koin", name = "koin-test", version.ref = "koin"
 kotlin-test = { group = "org.jetbrains.kotlin", name = "kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 ktor-client-mock = { group = "io.ktor", name = "ktor-client-mock", version.ref = "ktor" }
+turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
 
 # build-logic libraries
 android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
