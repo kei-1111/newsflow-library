@@ -24,6 +24,12 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                         implementation(libs.library("koin.core"))
                         implementation(libs.library("koin.compose.viewmodel"))
                     }
+                    commonTest.dependencies {
+                        implementation(libs.library("koin.test"))
+                        implementation(libs.library("kotlin.test"))
+                        implementation(libs.library("kotlinx.coroutines.test"))
+                        implementation(libs.library("turbine"))
+                    }
                 }
             }
         }
