@@ -19,6 +19,7 @@ kotlin {
             // iOSで使用したいモジュールはapiとしてエクスポートする
             api(projects.core.model)
             api(projects.feature.home)
+            api(projects.feature.viewer)
 
             implementation(libs.koin.core)
         }

@@ -11,7 +11,13 @@ import org.koin.core.context.startKoin
 
 actual fun initKoin(appContext: Any?) {
     startKoin {
-        modules(networkModule, dataModule, domainModule, homeModule)
+        modules(
+            networkModule,
+            dataModule,
+            domainModule,
+            homeModule,
+            networkModule,
+        )
     }.koin
 }
 
