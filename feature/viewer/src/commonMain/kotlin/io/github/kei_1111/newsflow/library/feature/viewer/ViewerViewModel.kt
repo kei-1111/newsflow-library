@@ -1,6 +1,5 @@
 package io.github.kei_1111.newsflow.library.feature.viewer
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
 import io.github.kei_1111.newsflow.library.core.logger.Logger
@@ -10,8 +9,8 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewMod
 import kotlinx.coroutines.launch
 
 class ViewerViewModel(
+    private val articleId: String,
     private val getArticleByIdUseCase: GetArticleByIdUseCase,
-    private val savedStateHandle: SavedStateHandle,
 ) : StatefulBaseViewModel<ViewerViewModelState, ViewerUiState, ViewerUiAction, ViewerUiEffect>() {
 
     override fun createInitialViewModelState(): ViewerViewModelState = ViewerViewModelState()
@@ -30,8 +29,7 @@ class ViewerViewModel(
     }
 
     private fun getArticle() {
-        val articleId = savedStateHandle.get<String>("articleId")
-        if (articleId == null) {
+        if (articleId.isBlank()) {
             handleGetArticleError(NewsflowError.InternalError.InvalidParameter("Article ID is missing"))
             return
         }

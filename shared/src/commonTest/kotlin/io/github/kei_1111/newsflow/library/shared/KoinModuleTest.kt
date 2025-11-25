@@ -1,6 +1,5 @@
 package io.github.kei_1111.newsflow.library.shared
 
-import androidx.lifecycle.SavedStateHandle
 import io.github.kei_1111.newsflow.library.core.data.di.dataModule
 import io.github.kei_1111.newsflow.library.core.data.repository.NewsRepository
 import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
@@ -15,7 +14,7 @@ import io.github.kei_1111.newsflow.library.feature.viewer.di.viewerModule
 import io.ktor.client.HttpClient
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
-import org.koin.dsl.module
+import org.koin.core.parameter.parametersOf
 import org.koin.test.KoinTest
 import org.koin.test.get
 import kotlin.test.AfterTest
@@ -34,7 +33,6 @@ class KoinModuleTest : KoinTest {
                 domainModule,
                 homeModule,
                 viewerModule,
-                module { factory { SavedStateHandle() } }
             )
         }
     }
@@ -82,7 +80,7 @@ class KoinModuleTest : KoinTest {
 
     @Test
     fun `verify ViewerViewModel can be resolved`() {
-        val viewerViewModel = get<ViewerViewModel>()
+        val viewerViewModel = get<ViewerViewModel> { parametersOf("test-article-id") }
         assertNotNull(viewerViewModel)
     }
 }
