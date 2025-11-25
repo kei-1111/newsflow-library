@@ -38,5 +38,6 @@ include(":core:network")
 include(":core:test")
 
 include(":feature:home")
+include(":feature:viewer")
 
 include(":shared")
