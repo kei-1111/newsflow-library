@@ -83,7 +83,7 @@ class HomeViewModelTest {
 
             val effect = awaitItem()
             assertIs<HomeUiEffect.NavigateViewer>(effect)
-            assertEquals(article.url, effect.url)
+            assertEquals(article.id, effect.id)
         }
     }
 
