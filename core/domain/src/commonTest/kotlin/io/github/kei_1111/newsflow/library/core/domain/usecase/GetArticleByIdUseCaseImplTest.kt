@@ -8,7 +8,6 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GetArticleByIdUseCaseImplTest {
@@ -34,14 +33,15 @@ class GetArticleByIdUseCaseImplTest {
     }
 
     @Test
-    fun `invoke returns null when repository returns null`() = runTest {
-        newsRepository.setGetByIdResult(Result.success(null))
+    fun `invoke returns failure when repository returns failure`() = runTest {
+        val error = NewsflowError.ArticleNotFound("Article not found")
+        newsRepository.setGetByIdResult(Result.failure(error))
         val useCase = GetArticleByIdUseCaseImpl(newsRepository)
 
         val result = useCase("nonexistent-id")
 
-        assertTrue(result.isSuccess)
-        assertNull(result.getOrNull())
+        assertTrue(result.isFailure)
+        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
         assertEquals("nonexistent-id", newsRepository.lastGetByIdArticleId)
     }
 
@@ -61,7 +61,8 @@ class GetArticleByIdUseCaseImplTest {
 
     @Test
     fun `invoke calls repository with correct article id`() = runTest {
-        newsRepository.setGetByIdResult(Result.success(null))
+        val article = createTestArticle(index = 1)
+        newsRepository.setGetByIdResult(Result.success(article))
         val useCase = GetArticleByIdUseCaseImpl(newsRepository)
 
         useCase("specific-article-id")

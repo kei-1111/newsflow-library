@@ -5,7 +5,7 @@ import io.github.kei_1111.newsflow.library.core.model.Article
 
 class FakeNewsRepository : NewsRepository {
     private var fetchResult: Result<List<Article>> = Result.success(emptyList())
-    private var getByIdResult: Result<Article?> = Result.success(null)
+    private var getByIdResult: Result<Article> = Result.failure(Exception("Not initialized"))
 
     var fetchInvocationCount = 0
         private set
@@ -23,7 +23,7 @@ class FakeNewsRepository : NewsRepository {
         this.fetchResult = result
     }
 
-    fun setGetByIdResult(result: Result<Article?>) {
+    fun setGetByIdResult(result: Result<Article>) {
         this.getByIdResult = result
     }
 
@@ -37,7 +37,7 @@ class FakeNewsRepository : NewsRepository {
         return fetchResult
     }
 
-    override suspend fun getArticleById(id: String): Result<Article?> {
+    override suspend fun getArticleById(id: String): Result<Article> {
         getByIdInvocationCount++
         lastGetByIdArticleId = id
         return getByIdResult

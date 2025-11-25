@@ -3,6 +3,7 @@ package io.github.kei_1111.newsflow.library.core.data.repository
 import io.github.kei_1111.newsflow.library.core.data.mapper.toArticles
 import io.github.kei_1111.newsflow.library.core.data.util.toNewsflowError
 import io.github.kei_1111.newsflow.library.core.model.Article
+import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.network.api.NewsApiService
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -34,8 +35,9 @@ internal class NewsRepositoryImpl(
         )
     }
 
-    override suspend fun getArticleById(id: String): Result<Article?> = cacheMutex.withLock {
+    override suspend fun getArticleById(id: String): Result<Article> = cacheMutex.withLock {
         val article = cache.values.flatten().firstOrNull { it.id == id }
-        Result.success(article)
+        article?.let { Result.success(it) }
+            ?: Result.failure(NewsflowError.ArticleNotFound("Article with id $id not found"))
     }
 }

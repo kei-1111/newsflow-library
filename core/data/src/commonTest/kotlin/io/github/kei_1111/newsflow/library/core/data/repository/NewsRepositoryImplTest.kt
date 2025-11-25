@@ -377,18 +377,18 @@ class NewsRepositoryImplTest {
         val result = repository.getArticleById(articleId)
 
         assertTrue(result.isSuccess)
-        val article = result.getOrNull()
-        assertEquals("Test Title", article?.title)
+        val article = result.getOrNull()!!
+        assertEquals("Test Title", article.title)
     }
 
     @Test
-    fun `getArticleById returns null when article not in cache`() = runTest {
+    fun `getArticleById returns failure when article not in cache`() = runTest {
         val repository = NewsRepositoryImpl(newsApiService)
 
         val result = repository.getArticleById("nonexistent-id")
 
-        assertTrue(result.isSuccess)
-        assertEquals(null, result.getOrNull())
+        assertTrue(result.isFailure)
+        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
     }
 
     @Test
@@ -440,17 +440,17 @@ class NewsRepositoryImplTest {
 
         assertTrue(techResult.isSuccess)
         assertTrue(businessResult.isSuccess)
-        assertEquals("Tech Title", techResult.getOrNull()?.title)
-        assertEquals("Business Title", businessResult.getOrNull()?.title)
+        assertEquals("Tech Title", techResult.getOrNull()!!.title)
+        assertEquals("Business Title", businessResult.getOrNull()!!.title)
     }
 
     @Test
-    fun `getArticleById returns null when cache is empty`() = runTest {
+    fun `getArticleById returns failure when cache is empty`() = runTest {
         val repository = NewsRepositoryImpl(newsApiService)
 
         val result = repository.getArticleById("any-id")
 
-        assertTrue(result.isSuccess)
-        assertEquals(null, result.getOrNull())
+        assertTrue(result.isFailure)
+        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
     }
 }
