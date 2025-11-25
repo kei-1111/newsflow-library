@@ -24,7 +24,7 @@ class HomeViewModel(
     override fun onUiAction(uiAction: HomeUiAction) {
         when (uiAction) {
             is HomeUiAction.OnClickArticleCard -> {
-                sendUiEffect(HomeUiEffect.NavigateViewer(uiAction.article.url))
+                sendUiEffect(HomeUiEffect.NavigateViewer(uiAction.article.id))
             }
 
             is HomeUiAction.OnSwipNewsCategoryPage -> {
