@@ -1,16 +1,21 @@
 package io.github.kei_1111.newsflow.library.shared
 
+import androidx.lifecycle.SavedStateHandle
 import io.github.kei_1111.newsflow.library.core.data.di.dataModule
 import io.github.kei_1111.newsflow.library.core.data.repository.NewsRepository
 import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
 import io.github.kei_1111.newsflow.library.core.network.api.NewsApiService
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.HomeViewModel
 import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
+import io.github.kei_1111.newsflow.library.feature.viewer.ViewerViewModel
+import io.github.kei_1111.newsflow.library.feature.viewer.di.viewerModule
 import io.ktor.client.HttpClient
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.get
 import kotlin.test.AfterTest
@@ -28,6 +33,8 @@ class KoinModuleTest : KoinTest {
                 dataModule,
                 domainModule,
                 homeModule,
+                viewerModule,
+                module { factory { SavedStateHandle() } }
             )
         }
     }
@@ -62,8 +69,20 @@ class KoinModuleTest : KoinTest {
     }
 
     @Test
+    fun `verify GetArticleByIdUseCase can be resolved`() {
+        val getArticleByIdUseCase = get<GetArticleByIdUseCase>()
+        assertNotNull(getArticleByIdUseCase)
+    }
+
+    @Test
     fun `verify HomeViewModel can be resolved`() {
         val homeViewModel = get<HomeViewModel>()
         assertNotNull(homeViewModel)
+    }
+
+    @Test
+    fun `verify ViewerViewModel can be resolved`() {
+        val viewerViewModel = get<ViewerViewModel>()
+        assertNotNull(viewerViewModel)
     }
 }
