@@ -38,6 +38,6 @@ internal class NewsRepositoryImpl(
     override suspend fun getArticleById(id: String): Result<Article> = cacheMutex.withLock {
         val article = cache.values.flatten().firstOrNull { it.id == id }
         article?.let { Result.success(it) }
-            ?: Result.failure(NewsflowError.ArticleNotFound("Article with id $id not found"))
+            ?: Result.failure(NewsflowError.InternalError.ArticleNotFound("Article with id $id not found"))
     }
 }

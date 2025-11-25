@@ -32,7 +32,7 @@ class ViewerViewModel(
     private fun getArticle() {
         val articleId = savedStateHandle.get<String>("articleId")
         if (articleId == null) {
-            handleGetArticleError(NewsflowError.InvalidParameter("Article ID is missing"))
+            handleGetArticleError(NewsflowError.InternalError.InvalidParameter("Article ID is missing"))
             return
         }
 

@@ -58,7 +58,7 @@ class HomeViewModelTest {
 
     @Test
     fun `initialization fails to fetch articles and transitions to error state`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network Error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
@@ -113,7 +113,7 @@ class HomeViewModelTest {
 
     @Test
     fun `onSwipeNewsCategoryPage changes category but fails to fetch articles`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network Error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.TECHNOLOGY
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
@@ -159,7 +159,7 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickNewsCategoryTag changes category but fails to fetch articles`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network Error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.BUSINESS
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
@@ -205,7 +205,7 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickRetryButton refetches articles but fails`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network error")
         fetchArticlesUseCase.setResult(Result.failure(error))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 

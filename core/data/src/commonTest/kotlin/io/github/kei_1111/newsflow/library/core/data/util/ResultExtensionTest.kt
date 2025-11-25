@@ -14,7 +14,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.Unauthorized>(result)
+        assertIs<NewsflowError.NetworkError.Unauthorized>(result)
         assertEquals("Invalid API key", result.message)
     }
 
@@ -24,7 +24,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.RateLimitExceeded>(result)
+        assertIs<NewsflowError.NetworkError.RateLimitExceeded>(result)
         assertEquals("Rate limit exceeded", result.message)
     }
 
@@ -34,7 +34,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.BadRequest>(result)
+        assertIs<NewsflowError.NetworkError.BadRequest>(result)
         assertEquals("Bad request", result.message)
     }
 
@@ -44,7 +44,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.ServerError>(result)
+        assertIs<NewsflowError.NetworkError.ServerError>(result)
         assertEquals("Internal server error", result.message)
     }
 
@@ -54,7 +54,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.NetworkFailure>(result)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(result)
         assertEquals("Network error", result.message)
     }
 
@@ -64,7 +64,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.NetworkFailure>(result)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(result)
         assertEquals("Unknown error", result.message)
     }
 
@@ -74,7 +74,7 @@ class ResultExtensionTest {
 
         val result = exception.toNewsflowError()
 
-        assertIs<NewsflowError.NetworkFailure>(result)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(result)
         assertEquals("Unknown error", result.message)
     }
 }

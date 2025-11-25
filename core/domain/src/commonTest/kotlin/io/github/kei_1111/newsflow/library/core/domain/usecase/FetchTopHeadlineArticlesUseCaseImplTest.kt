@@ -33,7 +33,7 @@ class FetchTopHeadlineArticlesUseCaseImplTest {
 
     @Test
     fun `invoke returns failure when repository returns failure`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network error")
         newsRepository.setFetchResult(Result.failure(error))
         val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
@@ -41,44 +41,44 @@ class FetchTopHeadlineArticlesUseCaseImplTest {
 
         assertTrue(result.isFailure)
         val exception = result.exceptionOrNull()
-        assertIs<NewsflowError.NetworkFailure>(exception)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(exception)
         assertEquals("Network error", exception.message)
     }
 
     @Test
     fun `invoke propagates Unauthorized error from repository`() = runTest {
-        val error = NewsflowError.Unauthorized("Invalid API key")
+        val error = NewsflowError.NetworkError.Unauthorized("Invalid API key")
         newsRepository.setFetchResult(Result.failure(error))
         val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.Unauthorized>(result.exceptionOrNull())
+        assertIs<NewsflowError.NetworkError.Unauthorized>(result.exceptionOrNull())
     }
 
     @Test
     fun `invoke propagates RateLimitExceeded error from repository`() = runTest {
-        val error = NewsflowError.RateLimitExceeded("Rate limit exceeded")
+        val error = NewsflowError.NetworkError.RateLimitExceeded("Rate limit exceeded")
         newsRepository.setFetchResult(Result.failure(error))
         val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.RateLimitExceeded>(result.exceptionOrNull())
+        assertIs<NewsflowError.NetworkError.RateLimitExceeded>(result.exceptionOrNull())
     }
 
     @Test
     fun `invoke propagates ServerError from repository`() = runTest {
-        val error = NewsflowError.ServerError("Internal server error")
+        val error = NewsflowError.NetworkError.ServerError("Internal server error")
         newsRepository.setFetchResult(Result.failure(error))
         val useCase = FetchTopHeadlineArticlesUseCaseImpl(newsRepository)
 
         val result = useCase("technology")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.ServerError>(result.exceptionOrNull())
+        assertIs<NewsflowError.NetworkError.ServerError>(result.exceptionOrNull())
     }
 
     @Test

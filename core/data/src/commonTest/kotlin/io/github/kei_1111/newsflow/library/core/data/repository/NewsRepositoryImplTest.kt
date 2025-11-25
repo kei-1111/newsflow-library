@@ -74,7 +74,7 @@ class NewsRepositoryImplTest {
 
         assertTrue(result.isFailure)
         val error = result.exceptionOrNull()
-        assertIs<NewsflowError.Unauthorized>(error)
+        assertIs<NewsflowError.NetworkError.Unauthorized>(error)
         assertEquals("Invalid API key", error.message)
     }
 
@@ -88,7 +88,7 @@ class NewsRepositoryImplTest {
 
         assertTrue(result.isFailure)
         val error = result.exceptionOrNull()
-        assertIs<NewsflowError.RateLimitExceeded>(error)
+        assertIs<NewsflowError.NetworkError.RateLimitExceeded>(error)
         assertEquals("Rate limit exceeded", error.message)
     }
 
@@ -102,7 +102,7 @@ class NewsRepositoryImplTest {
 
         assertTrue(result.isFailure)
         val error = result.exceptionOrNull()
-        assertIs<NewsflowError.BadRequest>(error)
+        assertIs<NewsflowError.NetworkError.BadRequest>(error)
         assertEquals("Bad request", error.message)
     }
 
@@ -116,7 +116,7 @@ class NewsRepositoryImplTest {
 
         assertTrue(result.isFailure)
         val error = result.exceptionOrNull()
-        assertIs<NewsflowError.ServerError>(error)
+        assertIs<NewsflowError.NetworkError.ServerError>(error)
         assertEquals("Internal server error", error.message)
     }
 
@@ -130,7 +130,7 @@ class NewsRepositoryImplTest {
 
         assertTrue(result.isFailure)
         val error = result.exceptionOrNull()
-        assertIs<NewsflowError.NetworkFailure>(error)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(error)
         assertEquals("Network error", error.message)
     }
 
@@ -388,7 +388,7 @@ class NewsRepositoryImplTest {
         val result = repository.getArticleById("nonexistent-id")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
+        assertIs<NewsflowError.InternalError.ArticleNotFound>(result.exceptionOrNull())
     }
 
     @Test
@@ -451,6 +451,6 @@ class NewsRepositoryImplTest {
         val result = repository.getArticleById("any-id")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
+        assertIs<NewsflowError.InternalError.ArticleNotFound>(result.exceptionOrNull())
     }
 }

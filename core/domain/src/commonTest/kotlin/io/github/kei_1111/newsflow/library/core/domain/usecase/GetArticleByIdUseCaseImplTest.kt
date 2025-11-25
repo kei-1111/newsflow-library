@@ -34,20 +34,20 @@ class GetArticleByIdUseCaseImplTest {
 
     @Test
     fun `invoke returns failure when repository returns failure`() = runTest {
-        val error = NewsflowError.ArticleNotFound("Article not found")
+        val error = NewsflowError.InternalError.ArticleNotFound("Article not found")
         newsRepository.setGetByIdResult(Result.failure(error))
         val useCase = GetArticleByIdUseCaseImpl(newsRepository)
 
         val result = useCase("nonexistent-id")
 
         assertTrue(result.isFailure)
-        assertIs<NewsflowError.ArticleNotFound>(result.exceptionOrNull())
+        assertIs<NewsflowError.InternalError.ArticleNotFound>(result.exceptionOrNull())
         assertEquals("nonexistent-id", newsRepository.lastGetByIdArticleId)
     }
 
     @Test
     fun `invoke propagates errors from repository`() = runTest {
-        val error = NewsflowError.NetworkFailure("Network error")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network error")
         newsRepository.setGetByIdResult(Result.failure(error))
         val useCase = GetArticleByIdUseCaseImpl(newsRepository)
 
@@ -55,7 +55,7 @@ class GetArticleByIdUseCaseImplTest {
 
         assertTrue(result.isFailure)
         val exception = result.exceptionOrNull()
-        assertIs<NewsflowError.NetworkFailure>(exception)
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(exception)
         assertEquals("Network error", exception.message)
     }
 
