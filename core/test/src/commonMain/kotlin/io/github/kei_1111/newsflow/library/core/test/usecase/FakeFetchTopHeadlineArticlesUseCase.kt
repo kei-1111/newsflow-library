@@ -12,7 +12,7 @@ class FakeFetchTopHeadlineArticlesUseCase : FetchTopHeadlineArticlesUseCase {
         this.result = result
     }
 
-    override suspend fun invoke(category: String): Result<List<Article>> {
+    override suspend fun invoke(category: String, forceRefresh: Boolean): Result<List<Article>> {
         invocationCount++
         return result
     }

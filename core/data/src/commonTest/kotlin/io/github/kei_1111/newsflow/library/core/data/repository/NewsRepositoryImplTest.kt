@@ -133,4 +133,324 @@ class NewsRepositoryImplTest {
         assertIs<NewsflowError.NetworkFailure>(error)
         assertEquals("Network error", error.message)
     }
+
+    // Cache behavior tests
+    @Test
+    fun `fetchArticles caches result on first call`() = runTest {
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(newsResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.fetchArticles("technology")
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, newsApiService.invocationCount)
+    }
+
+    @Test
+    fun `fetchArticles returns cached data on second call without forceRefresh`() = runTest {
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(newsResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.fetchArticles("technology", forceRefresh = false)
+        val result = repository.fetchArticles("technology", forceRefresh = false)
+
+        assertTrue(result.isSuccess)
+        assertEquals(1, newsApiService.invocationCount)
+    }
+
+    @Test
+    fun `fetchArticles bypasses cache when forceRefresh is true`() = runTest {
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(newsResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.fetchArticles("technology", forceRefresh = false)
+        val result = repository.fetchArticles("technology", forceRefresh = true)
+
+        assertTrue(result.isSuccess)
+        assertEquals(2, newsApiService.invocationCount)
+    }
+
+    @Test
+    fun `fetchArticles updates cache when forceRefresh is true`() = runTest {
+        val firstResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Old Source"),
+                    author = "Old Author",
+                    title = "Old Title",
+                    description = "Old Description",
+                    url = "https://example.com/old",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        val secondResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "New Source"),
+                    author = "New Author",
+                    title = "New Title",
+                    description = "New Description",
+                    url = "https://example.com/new",
+                    urlToImage = null,
+                    publishedAt = "2024-01-02T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(firstResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.fetchArticles("technology", forceRefresh = false)
+        newsApiService.setResult(Result.success(secondResponse))
+        repository.fetchArticles("technology", forceRefresh = true)
+        val result = repository.fetchArticles("technology", forceRefresh = false)
+
+        assertTrue(result.isSuccess)
+        val articles = result.getOrNull()!!
+        assertEquals("New Title", articles[0].title)
+        assertEquals(2, newsApiService.invocationCount)
+    }
+
+    // Cache isolation tests
+    @Test
+    fun `different categories maintain separate caches`() = runTest {
+        val techResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Tech Source"),
+                    author = "Tech Author",
+                    title = "Tech Title",
+                    description = "Tech Description",
+                    url = "https://example.com/tech",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        val businessResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Business Source"),
+                    author = "Business Author",
+                    title = "Business Title",
+                    description = "Business Description",
+                    url = "https://example.com/business",
+                    urlToImage = null,
+                    publishedAt = "2024-01-02T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        newsApiService.setResult(Result.success(techResponse))
+        val techResult1 = repository.fetchArticles("technology")
+        newsApiService.setResult(Result.success(businessResponse))
+        val businessResult = repository.fetchArticles("business")
+        val techResult2 = repository.fetchArticles("technology")
+
+        assertTrue(techResult1.isSuccess)
+        assertTrue(businessResult.isSuccess)
+        assertTrue(techResult2.isSuccess)
+        assertEquals("Tech Title", techResult1.getOrNull()!![0].title)
+        assertEquals("Business Title", businessResult.getOrNull()!![0].title)
+        assertEquals("Tech Title", techResult2.getOrNull()!![0].title)
+        assertEquals(2, newsApiService.invocationCount)
+    }
+
+    @Test
+    fun `fetchArticles clears cache when API fails with forceRefresh`() = runTest {
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(newsResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.fetchArticles("technology", forceRefresh = false)
+        newsApiService.setResult(Result.failure(NetworkException.NetworkFailure("Network error")))
+        val failedResult = repository.fetchArticles("technology", forceRefresh = true)
+        newsApiService.setResult(Result.success(newsResponse))
+        val result = repository.fetchArticles("technology", forceRefresh = false)
+
+        assertTrue(failedResult.isFailure)
+        assertTrue(result.isSuccess)
+        assertEquals(3, newsApiService.invocationCount)
+    }
+
+    // getArticleById tests
+    @Test
+    fun `getArticleById returns article when found in cache`() = runTest {
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        newsApiService.setResult(Result.success(newsResponse))
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.fetchArticles("technology")
+        val articleId = "https://example.com/1".hashCode().toString()
+        val result = repository.getArticleById(articleId)
+
+        assertTrue(result.isSuccess)
+        val article = result.getOrNull()
+        assertEquals("Test Title", article?.title)
+    }
+
+    @Test
+    fun `getArticleById returns null when article not in cache`() = runTest {
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.getArticleById("nonexistent-id")
+
+        assertTrue(result.isSuccess)
+        assertEquals(null, result.getOrNull())
+    }
+
+    @Test
+    fun `getArticleById searches across all cached categories`() = runTest {
+        val techResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Tech Source"),
+                    author = "Tech Author",
+                    title = "Tech Title",
+                    description = "Tech Description",
+                    url = "https://example.com/tech",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        val businessResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Business Source"),
+                    author = "Business Author",
+                    title = "Business Title",
+                    description = "Business Description",
+                    url = "https://example.com/business",
+                    urlToImage = null,
+                    publishedAt = "2024-01-02T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        newsApiService.setResult(Result.success(techResponse))
+        repository.fetchArticles("technology")
+        newsApiService.setResult(Result.success(businessResponse))
+        repository.fetchArticles("business")
+
+        val techArticleId = "https://example.com/tech".hashCode().toString()
+        val businessArticleId = "https://example.com/business".hashCode().toString()
+
+        val techResult = repository.getArticleById(techArticleId)
+        val businessResult = repository.getArticleById(businessArticleId)
+
+        assertTrue(techResult.isSuccess)
+        assertTrue(businessResult.isSuccess)
+        assertEquals("Tech Title", techResult.getOrNull()?.title)
+        assertEquals("Business Title", businessResult.getOrNull()?.title)
+    }
+
+    @Test
+    fun `getArticleById returns null when cache is empty`() = runTest {
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.getArticleById("any-id")
+
+        assertTrue(result.isSuccess)
+        assertEquals(null, result.getOrNull())
+    }
 }

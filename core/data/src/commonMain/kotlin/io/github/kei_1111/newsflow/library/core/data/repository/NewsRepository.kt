@@ -3,5 +3,10 @@ package io.github.kei_1111.newsflow.library.core.data.repository
 import io.github.kei_1111.newsflow.library.core.model.Article
 
 interface NewsRepository {
-    suspend fun fetchArticles(category: String): Result<List<Article>>
+    suspend fun fetchArticles(
+        category: String,
+        forceRefresh: Boolean = false,
+    ): Result<List<Article>>
+
+    suspend fun getArticleById(id: String): Result<Article?>
 }
