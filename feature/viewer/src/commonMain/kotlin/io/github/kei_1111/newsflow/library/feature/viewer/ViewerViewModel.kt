@@ -23,8 +23,8 @@ class ViewerViewModel(
 
     override fun onUiAction(uiAction: ViewerUiAction) {
         when (uiAction) {
-            ViewerUiAction.OnClickNavigateHome -> {
-                sendUiEffect(ViewerUiEffect.NavigateHome)
+            ViewerUiAction.OnClickNavigateBack -> {
+                sendUiEffect(ViewerUiEffect.NavigateBack)
             }
         }
     }
