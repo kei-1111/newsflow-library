@@ -19,10 +19,10 @@ internal class NewsRepositoryImpl(
         forceRefresh: Boolean,
     ): Result<List<Article>> = cacheMutex.withLock {
         if (!forceRefresh) {
-            cache[category]?.let { return Result.success(it) }
+            cache[category]?.let { return@withLock Result.success(it) }
         }
 
-        return newsApiService.fetchTopHeadlines(category).fold(
+        return@withLock newsApiService.fetchTopHeadlines(category).fold(
             onSuccess = { response ->
                 val articles = response.toArticles()
                 cache[category] = articles
