@@ -7,4 +7,5 @@ sealed class NewsflowError(message: String) : Exception(message) {
     data class ServerError(override val message: String) : NewsflowError(message)
     data class NetworkFailure(override val message: String) : NewsflowError(message)
     data class ArticleNotFound(override val message: String = "Article not found") : NewsflowError(message)
+    data class InvalidParameter(override val message: String) : NewsflowError(message)
 }
