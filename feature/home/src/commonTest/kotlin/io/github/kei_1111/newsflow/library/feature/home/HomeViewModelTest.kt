@@ -224,6 +224,106 @@ class HomeViewModelTest {
         }
     }
 
+    @Test
+    fun `onClickMoreBottom updates selectedArticle in state`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.uiState.test {
+            skipInitialization()
+
+            viewModel.onUiAction(HomeUiAction.OnClickMoreBottom(article))
+
+            val updatedState = awaitItem()
+            assertIs<HomeUiState.Stable>(updatedState)
+            assertEquals(article, updatedState.selectedArticle)
+        }
+    }
+
+    @Test
+    fun `onDismissArticleOverviewBottomSheet clears selectedArticle`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.uiState.test {
+            skipInitialization()
+
+            // まず記事を選択
+            viewModel.onUiAction(HomeUiAction.OnClickMoreBottom(article))
+            val selectedState = awaitItem()
+            assertIs<HomeUiState.Stable>(selectedState)
+            assertEquals(article, selectedState.selectedArticle)
+
+            // ボトムシートを閉じる
+            viewModel.onUiAction(HomeUiAction.OnDismissArticleOverviewBottomSheet)
+            val clearedState = awaitItem()
+            assertIs<HomeUiState.Stable>(clearedState)
+            assertEquals(null, clearedState.selectedArticle)
+        }
+    }
+
+    @Test
+    fun `onClickCopyUrlButton emits CopyUrl effect when article is selected`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.onUiAction(HomeUiAction.OnClickMoreBottom(article))
+
+        viewModel.uiEffect.test {
+            viewModel.onUiAction(HomeUiAction.OnClickCopyUrlButton)
+
+            val effect = awaitItem()
+            assertIs<HomeUiEffect.CopyUrl>(effect)
+            assertEquals(article.url, effect.url)
+        }
+    }
+
+    @Test
+    fun `onClickCopyUrlButton does nothing when no article is selected`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.uiEffect.test {
+            viewModel.onUiAction(HomeUiAction.OnClickCopyUrlButton)
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `onClickShareButton emits ShareArticle effect when article is selected`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val article = createTestArticle(1)
+
+        // 先に記事を選択
+        viewModel.onUiAction(HomeUiAction.OnClickMoreBottom(article))
+
+        viewModel.uiEffect.test {
+            viewModel.onUiAction(HomeUiAction.OnClickShareButton)
+
+            val effect = awaitItem()
+            assertIs<HomeUiEffect.ShareArticle>(effect)
+            assertEquals(article.title, effect.title)
+            assertEquals(article.url, effect.url)
+        }
+    }
+
+    @Test
+    fun `onClickShareButton does nothing when no article is selected`() = runTest {
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.uiEffect.test {
+            viewModel.onUiAction(HomeUiAction.OnClickShareButton)
+
+            expectNoEvents()
+        }
+    }
+
     private suspend fun <T> ReceiveTurbine<T>.skipInitialization() {
         skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
         testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
