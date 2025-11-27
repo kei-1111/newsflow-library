@@ -6,10 +6,11 @@ import io.github.kei_1111.newsflow.library.core.mvi.UiAction
 
 sealed interface HomeUiAction : UiAction {
     data class OnClickArticleCard(val article: Article) : HomeUiAction
-
     data class OnSwipNewsCategoryPage(val newsCategory: NewsCategory) : HomeUiAction
-
     data class OnClickNewsCategoryTag(val newsCategory: NewsCategory) : HomeUiAction
-
+    data class OnClickMoreBottom(val article: Article) : HomeUiAction
+    data object OnDismissArticleOverviewBottomSheet : HomeUiAction
+    data object OnClickCopyUrlButton : HomeUiAction
+    data object OnClickShareButton : HomeUiAction
     data object OnClickRetryButton : HomeUiAction
 }

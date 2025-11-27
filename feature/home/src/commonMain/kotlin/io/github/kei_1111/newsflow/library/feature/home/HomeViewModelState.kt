@@ -8,6 +8,7 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
 data class HomeViewModelState(
     val statusType: StatusType = StatusType.STABLE,
     val isLoading: Boolean = false,
+    val selectedArticle: Article? = null,
     val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
     val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     val error: NewsflowError? = null,
@@ -17,6 +18,7 @@ data class HomeViewModelState(
     override fun toState(): HomeUiState = when (statusType) {
         StatusType.STABLE -> HomeUiState.Stable(
             isLoading = isLoading,
+            selectedArticle = selectedArticle,
             currentNewsCategory = currentNewsCategory,
             articlesByCategory = articlesByCategory
         )

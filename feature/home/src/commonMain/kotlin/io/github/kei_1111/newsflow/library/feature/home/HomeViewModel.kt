@@ -26,15 +26,34 @@ class HomeViewModel(
             is HomeUiAction.OnClickArticleCard -> {
                 sendUiEffect(HomeUiEffect.NavigateViewer(uiAction.article.id))
             }
-
             is HomeUiAction.OnSwipNewsCategoryPage -> {
                 changeNewsCategory(uiAction.newsCategory)
             }
-
             is HomeUiAction.OnClickNewsCategoryTag -> {
                 changeNewsCategory(uiAction.newsCategory)
             }
-
+            is HomeUiAction.OnClickMoreBottom -> {
+                updateViewModelState { copy(selectedArticle = uiAction.article) }
+            }
+            is HomeUiAction.OnDismissArticleOverviewBottomSheet -> {
+                updateViewModelState { copy(selectedArticle = null) }
+            }
+            is HomeUiAction.OnClickCopyUrlButton -> {
+                _viewModelState.value.selectedArticle?.let {
+                    sendUiEffect(HomeUiEffect.CopyUrl(it.url))
+                }
+            }
+            is HomeUiAction.OnClickShareButton -> {
+                val article = _viewModelState.value.selectedArticle
+                article?.let {
+                    sendUiEffect(
+                        HomeUiEffect.ShareArticle(
+                            title = article.title,
+                            url = article.url,
+                        )
+                    )
+                }
+            }
             is HomeUiAction.OnClickRetryButton -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
