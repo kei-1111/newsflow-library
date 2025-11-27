@@ -2,11 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Guidelines
-
-This document defines the project's rules, objectives, and progress management methods. Please proceed with the project according to the following content.
-
-### Top-Level Rules
+## Top-Level Rules
 
 - To maximize efficiency, **if you need to execute multiple independent processes, invoke those tools concurrently, not sequentially**.
 - **You must think exclusively in English**. However, you are required to **respond in Japanese**.
@@ -15,51 +11,146 @@ This document defines the project's rules, objectives, and progress management m
 
 newsflow-libraryは、Android・iOS向けのKotlin Multiplatform (KMP)ニュース配信ライブラリです。Clean Architectureの原則に基づき、厳格なモジュール分離とMVIパターンを採用しています。
 
-## ビルドコマンド
+## クイックリファレンス
 
-### テストの実行
+### よく使うコマンド
+
+| コマンド | 説明 |
+|---------|------|
+| `./gradlew allTests` | 全モジュールのテスト実行 |
+| `./gradlew :core:domain:allTests` | 特定モジュールのテスト |
+| `./gradlew detekt` | 静的解析（コード品質チェック） |
+| `./gradlew clean build` | クリーン＆ビルド |
+| `./gradlew assemble` | 全XCFrameworkビルド |
+
+### 重要ファイル
+
+| パス | 役割 |
+|------|------|
+| `core/mvi/src/.../StatefulBaseViewModel.kt` | MVI基底クラス |
+| `core/model/src/.../NewsflowError.kt` | エラー型定義 |
+| `core/model/src/.../Article.kt` | 記事エンティティ |
+| `core/test/src/.../Fake*.kt` | テスト用Fake実装 |
+| `core/test/src/.../TestDataBuilder.kt` | テストデータ生成 |
+| `shared/src/.../Koin.kt` | DI初期化 |
+| `build-logic/convention/src/...` | Convention Plugins |
+
+### よく使うユーティリティ
+
+```kotlin
+// テストデータ生成
+createTestArticle()
+createTestArticles(n)
+
+// ViewModel内部ステート更新
+updateViewModelState { copy(...) }
+
+// 一度きりのイベント送信
+sendUiEffect(MyUiEffect.Navigate(...))
+
+// 最小ローディング時間保証
+ensureMinimumLoadingTime()
+```
+
+## ⚠️ 警告・注意事項
+
+### 絶対に守るべきルール
+
+1. **フィーチャーモジュール間の依存は絶対に作らない** - feature:homeからfeature:viewerへの依存など禁止
+2. **実装クラスは`internal`、インターフェースは`public`** - Koinバインディングのため必須
+3. **テストは`src/commonTest/kotlin/`のみ** - プラットフォーム固有テストは作成しない
+4. **ViewModelStateの`toState()`は純粋関数** - 副作用禁止
+
+### よくある間違い
+
+- ❌ フィーチャーからcore:dataやcore:networkを直接参照 → ✅ core:domain経由のみ
+- ❌ ViewModelでリポジトリを直接使用 → ✅ UseCaseを経由
+- ❌ UIStateをミュータブルにする → ✅ ViewModelStateでミュータブル管理、UiStateはイミュータブル
+- ❌ Dispatcherをハードコード → ✅ コンストラクタ注入で設定
+
+## 開発環境セットアップ
+
+### 必要条件
+
+- JDK 21
+- Android Studio with KMP plugin
+- Xcode（iOS開発時）
+
+### API Key設定
+
+`local.properties`に追加：
+```properties
+NEWS_API_KEY=your_api_key_here
+```
+
+### 初回セットアップ
 
 ```bash
-# 全モジュールのテストを実行
+# 依存関係のダウンロードとビルド確認
+./gradlew build
+
+# テスト実行で環境確認
 ./gradlew allTests
-
-# 特定モジュールのテストを実行
-./gradlew :core:domain:allTests
-./gradlew :feature:home:allTests
-
-# クリーン＆ビルド
-./gradlew clean build
 ```
 
-### コード品質チェック
+## コードスタイルガイドライン
 
-```bash
-# 全モジュールでdetekt静的解析を実行
-./gradlew detekt
+### Kotlin規約
+
+- **命名**: camelCase（関数・変数）、PascalCase（クラス・インターフェース）
+- **インポート**: ワイルドカード禁止、アルファベット順
+- **可視性**: 最小限の公開範囲を維持（デフォルトはprivate/internal）
+
+### プロジェクト固有規約
+
+```kotlin
+// ✅ Good: UseCaseは単一のpublic invoke関数
+interface FetchArticlesUseCase {
+    suspend operator fun invoke(category: String, forceRefresh: Boolean = false): Result<List<Article>>
+}
+
+// ✅ Good: ViewModelStateからUiStateを導出
+data class HomeViewModelState(...) : ViewModelState<HomeUiState> {
+    override fun toState(): HomeUiState = when { ... }
+}
+
+// ✅ Good: Result型でエラーをラップ
+suspend fun fetchArticles(): Result<List<Article>>
+
+// ❌ Bad: 例外をスロー
+suspend fun fetchArticles(): List<Article> // throws Exception
 ```
 
-### XCFrameworkのビルド（iOS向け）
+### Detektルール
 
-```bash
-# 特定モジュールのXCFrameworkをビルド
-./gradlew assembleSharedXCFramework
-./gradlew assembleHomeXCFramework
+- 長いメソッドや複雑な式は分割
+- マジックナンバー禁止（定数化）
+- ネスト深度は最大4レベル
 
-# 全XCFrameworkをビルド
-./gradlew assemble
-```
+## 推奨ワークフロー
+
+### 新機能実装時
+
+1. **探索**: 関連コードを読んで既存パターンを理解
+2. **計画**: 実装ステップを整理（必要に応じてTodoWriteを使用）
+3. **テスト作成**: Fakeを使った失敗テストを先に書く
+4. **実装**: テストを通すコードを実装
+5. **検証**: `./gradlew allTests detekt`で品質確認
+
+### デバッグ時
+
+1. エラーメッセージから`NewsflowError`の型を特定
+2. 関連するRepository/UseCaseのテストを確認
+3. Fakeの設定が正しいか検証
 
 ## アーキテクチャ概要
 
-### モジュール構造
-
-レイヤードモジュラーアーキテクチャで、明確な依存関係フローを持ちます：
+### モジュール依存関係フロー
 
 ```
 基盤層（他のプロジェクトモジュールに依存しない）:
-- core:model（ドメインエンティティ）
-- core:network（HTTPクライアント、APIサービス）
-
+├── core:model（ドメインエンティティ）
+└── core:network（HTTPクライアント、APIサービス）
     ↓
 core:data（リポジトリパターン＋キャッシング）
     → core:model, core:network に依存
@@ -71,233 +162,206 @@ features（プレゼンテーション層＋MVI）
     → core:domain, core:model, core:mvi, core:logger に依存
 
 独立モジュール:
-- core:mvi（ViewModel用MVIフレームワーク）
-- core:logger（プラットフォーム非依存のログ）
-- core:test（テストユーティリティとFake実装）
-- shared（Koin DI集約＆iOSエクスポート）
+├── core:mvi（ViewModel用MVIフレームワーク）
+├── core:logger（プラットフォーム非依存のログ）
+├── core:test（テストユーティリティとFake実装）
+└── shared（Koin DI集約＆iOSエクスポート）
 ```
 
-### コアモジュール
+### コアモジュール詳細
 
-- **core:model**: ドメインエンティティ（`Article`、`NewsCategory`、`NewsflowError`）。依存なし。
-- **core:network**: KtorベースのHTTPクライアント（プラットフォーム別エンジン：OkHttp/Darwin）。`NewsApiService`とBuildKonfigによるAPI設定を含む。
-- **core:data**: `NewsRepository`の実装。Mutexを使ったスレッドセーフなインメモリキャッシング。DTO→ドメインモデル変換のマッパーを含む。
-- **core:domain**: リポジトリに委譲する薄いユースケースラッパー（`FetchTopHeadlineArticlesUseCase`、`GetArticleByIdUseCase`）。
-- **core:mvi**: ステートフル/ステートレスViewModel用ベースクラス。単方向データフロー。内部`ViewModelState`と公開`UiState`を分離。androidx-lifecycle-viewmodelに依存。
-- **core:logger**: プラットフォーム固有ログのexpect/actual実装。
-- **core:test**: テスト用Fake実装（`FakeNewsRepository`、`FakeNewsApiService`、`FakeFetchTopHeadlineArticlesUseCase`）とテストデータビルダー。
+| モジュール | 役割 | 主要クラス |
+|-----------|------|-----------|
+| core:model | ドメインエンティティ | `Article`, `NewsCategory`, `NewsflowError` |
+| core:network | HTTPクライアント | `NewsApiService`, `HttpClient` |
+| core:data | リポジトリ実装 | `NewsRepositoryImpl`, Mappers |
+| core:domain | ユースケース | `FetchTopHeadlineArticlesUseCase`, `GetArticleByIdUseCase` |
+| core:mvi | MVIフレームワーク | `StatefulBaseViewModel`, `StatelessBaseViewModel` |
+| core:logger | ログ出力 | expect/actual実装 |
+| core:test | テストユーティリティ | `FakeNewsRepository`, `FakeNewsApiService` |
 
 ### フィーチャーモジュール
 
-フィーチャーモジュールはMVIパターンに従います：
-- **ViewModel**: `StatefulBaseViewModel<ViewModelState, UiState, UiAction, UiEffect>`を継承
-- **UiState**: UI公開用のイミュータブルなステート（sealed interface）
-- **ViewModelState**: 内部ミュータブルなステート（data class）
-- **UiAction**: ユーザーインタラクション
-- **UiEffect**: 一度きりの副作用（ナビゲーション、トーストなど）をChannelで実装
+| モジュール | 役割 |
+|-----------|------|
+| feature:home | カテゴリ別ニュースフィード表示 |
+| feature:viewer | 記事詳細表示（SavedStateHandle経由で引数受け取り） |
 
-現在のフィーチャー:
-- **feature:home**: カテゴリ別ニュースフィード。カテゴリごとの記事キャッシング。
-- **feature:viewer**: 記事詳細表示。SavedStateHandleでナビゲーション引数を受け取る。
+## MVI実装パターン
 
-### Sharedモジュール
+### ファイル構成
 
-`shared`モジュールは統合ポイントとして機能：
-- 全Koinモジュールを集約（networkModule、dataModule、domainModule、各フィーチャーモジュール）
-- プラットフォーム固有のコンテキスト処理を含む`initKoin()`を提供（expect/actual）
-- `api()`依存でフィーチャーモジュールをiOS向けにXCFrameworkとしてエクスポート
+```
+feature/xxx/src/commonMain/kotlin/.../
+├── XxxViewModel.kt       # ViewModel実装
+├── XxxUiState.kt        # UI公開用ステート（sealed interface）
+├── XxxUiAction.kt       # ユーザーアクション
+├── XxxUiEffect.kt       # 一度きりの副作用
+├── XxxViewModelState.kt # 内部ステート（data class）
+└── XxxModule.kt         # Koinモジュール
+```
+
+### 実装テンプレート
+
+```kotlin
+// ViewModelState定義
+data class XxxViewModelState(
+    val isLoading: Boolean = false,
+    val data: List<Item> = emptyList(),
+    val error: NewsflowError? = null,
+) : ViewModelState<XxxUiState> {
+    override fun toState(): XxxUiState = when {
+        error != null -> XxxUiState.Error(error)
+        else -> XxxUiState.Stable(isLoading, data)
+    }
+}
+
+// ViewModel実装
+class XxxViewModel(
+    private val useCase: XxxUseCase,
+) : StatefulBaseViewModel<XxxViewModelState, XxxUiState, XxxUiAction, XxxUiEffect>(
+    initialViewModelState = XxxViewModelState(),
+) {
+    override fun handleAction(action: XxxUiAction) {
+        when (action) {
+            is XxxUiAction.Load -> loadData()
+        }
+    }
+
+    private fun loadData() {
+        viewModelScope.launch {
+            updateViewModelState { copy(isLoading = true) }
+            useCase().fold(
+                onSuccess = { updateViewModelState { copy(data = it, isLoading = false) } },
+                onFailure = { updateViewModelState { copy(error = it as? NewsflowError, isLoading = false) } }
+            )
+        }
+    }
+}
+```
 
 ## 依存性注入（Koin）
 
-全依存関係はKoinでモジュラー管理：
+### モジュール構成
 
 ```kotlin
-// 各レイヤーが独自のモジュールを持つ
-networkModule: HttpClient (singleton)、NewsApiService (singleton)
+// 各レイヤーのモジュール
+networkModule: HttpClient, NewsApiService (singleton)
 dataModule: NewsRepository (singleton)
 domainModule: ユースケース (singleton)
 homeModule: HomeViewModel (viewModel scope)
 viewerModule: ViewerViewModel (viewModel scope)
 ```
 
-**パターン**: `singleOf(::Implementation) bind Interface::class`でインターフェースバインディング。実装クラスは`internal`、インターフェースは`public`。
+### バインディングパターン
 
-**初期化**: プラットフォーム固有で`shared.initKoin()`経由 - AndroidのApplicationクラスまたはiOSアプリエントリーポイントから呼び出す。
+```kotlin
+val myModule = module {
+    // インターフェースバインディング
+    singleOf(::MyRepositoryImpl) bind MyRepository::class
+    singleOf(::MyUseCaseImpl) bind MyUseCase::class
+
+    // ViewModelスコープ
+    viewModelOf(::MyViewModel)
+}
+```
 
 ## テスト戦略
 
-### テストファイルの配置場所
-全テストは`src/commonTest/kotlin/`に配置してプラットフォーム非依存実行。
-
 ### テストパターン
 
-**ViewModelテスト**:
 ```kotlin
-// core:testのFakeユースケースを使用
-val fakeUseCase = FakeFetchTopHeadlineArticlesUseCase()
-fakeUseCase.setResult(Result.success(testArticles))
+class XxxViewModelTest {
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var fakeUseCase: FakeXxxUseCase
+    private lateinit var viewModel: XxxViewModel
 
-// TurbineでFlowアサーション
-viewModel.uiState.test {
-    val state = awaitItem()
-    assertIs<HomeUiState.Stable>(state)
-}
+    @BeforeTest
+    fun setup() {
+        Dispatchers.setMain(testDispatcher)
+        fakeUseCase = FakeXxxUseCase()
+        viewModel = XxxViewModel(fakeUseCase)
+    }
 
-// StandardTestDispatcherでコルーチン制御
-@BeforeTest
-fun setup() {
-    Dispatchers.setMain(StandardTestDispatcher())
+    @AfterTest
+    fun tearDown() {
+        Dispatchers.resetMain()
+    }
+
+    @Test
+    fun `success case`() = runTest {
+        fakeUseCase.setResult(Result.success(testData))
+
+        viewModel.uiState.test {
+            viewModel.handleAction(XxxUiAction.Load)
+            // アサーション
+        }
+    }
 }
 ```
 
-**Repository/UseCaseテスト**:
-- `core:test`のFake実装を使用
-- キャッシング動作とエラーハンドリングを検証
+### テストユーティリティ
 
-**Networkテスト**:
-- Ktor MockEngineでHTTPモック
-
-### テストユーティリティ（core:test）
 - `FakeNewsApiService`: 制御可能なAPIレスポンス
-- `FakeNewsRepository`: テスト用インメモリリポジトリ
-- `FakeFetchTopHeadlineArticlesUseCase`: 設定可能な結果を返すユースケース
-- `createTestArticle()`、`createTestArticles(n)`: テストデータビルダー
+- `FakeNewsRepository`: インメモリリポジトリ
+- `FakeFetchTopHeadlineArticlesUseCase`: 設定可能なユースケース
+- `createTestArticle()`, `createTestArticles(n)`: テストデータビルダー
 
 ## Convention Plugins
 
-ビルド設定は`build-logic/convention`で一元管理：
+| Plugin | 用途 | 適用対象 |
+|--------|------|---------|
+| `newsflow.library.kmp.library` | KMPライブラリ基本設定 | coreモジュール, shared |
+| `newsflow.library.kmp.feature` | フィーチャーモジュール設定 | feature/* |
+| `newsflow.library.detekt` | 静的解析設定 | 全モジュール |
+| `newsflow.library.maven.publish` | Maven公開設定 | 公開対象モジュール |
 
-1. **KmpLibraryConventionPlugin** (`newsflow.library.kmp.library`): coreモジュール・sharedモジュールに適用
-   - Android/iOSターゲット設定（iosX64、iosArm64、iosSimulatorArm64）
-   - XCFramework生成設定（staticリンク）
-   - DetektとMaven publishingを自動適用
-   - JVM 21ターゲット
+**新規モジュール作成時**:
+- coreモジュール: `alias(libs.plugins.newsflow.library.kmp.library)`
+- フィーチャーモジュール: `alias(libs.plugins.newsflow.library.kmp.feature)`
 
-2. **KmpFeatureConventionPlugin** (`newsflow.library.kmp.feature`): フィーチャーモジュールに適用
-   - KmpLibraryConventionPluginを拡張
-   - 自動インクルード: core:mvi、core:model（API）、core:domain、core:logger（implementation）
-   - 自動インクルード: Koin依存（koin-core、koin-compose-viewmodel）
-   - テスト依存: core:test、koin-test、kotlin-test、kotlinx-coroutines-test、turbine
+## エラーハンドリング
 
-3. **DetektConventionPlugin** (`newsflow.library.detekt`): 静的解析設定
+### NewsflowError型
 
-4. **MavenPublishConventionPlugin** (`newsflow.library.maven.publish`): Maven公開設定
-
-新規モジュール作成時：
-- coreモジュール: `alias(libs.plugins.newsflow.library.kmp.library)`を適用
-- フィーチャーモジュール: `alias(libs.plugins.newsflow.library.kmp.feature)`を適用（標準依存が自動インクルード）
-
-## 開発ガイドライン
-
-### モジュール依存関係
-- フィーチャーモジュール間の依存は**絶対に作らない**
-- coreモジュールは厳格なレイヤリング:
-  - 基盤層: core:model、core:network（プロジェクト依存なし）
-  - データ層: core:data → core:model, core:network
-  - ドメイン層: core:domain → core:data, core:model
-- フィーチャーはcore:domain、core:model、core:mvi、core:loggerのみに依存
-
-### 新規フィーチャーの追加
-1. `feature/`ディレクトリ下にモジュール作成
-2. build.gradle.ktsで`alias(libs.plugins.newsflow.library.kmp.feature)`を適用
-3. UiState/UiAction/UiEffectを持つStatefulBaseViewModel継承ViewModelを作成
-4. `viewModelOf(::YourViewModel)`でKoinモジュール作成
-5. `shared`モジュールのKoin初期化に追加（Android/iOS両方）
-
-### MVI実装
-- `ViewModelState`インターフェースを実装したdata classを定義（`toState()`メソッドで`UiState`を導出）
-- 内部ステート更新は`updateViewModelState { copy(...) }`を使用
-- ナビゲーションや一度きりのイベントには`sendUiEffect()`を使用
-- ローディング状態はUX一貫性のため最小表示時間を使用（`ensureMinimumLoadingTime()`）
-
-### テスト要件
-- `src/commonTest/kotlin/`にテストを記述してプラットフォーム非依存実行
-- 分離のため`core:test`のFake実装を使用
-- StateFlow/FlowテストにはTurbineを使用
-- @BeforeTestで`Dispatchers.setMain(StandardTestDispatcher())`を設定
-- 成功パスとエラーパス両方を検証
-
-### キャッシング戦略
-リポジトリはスレッドセーフな`Mutex`付きインメモリキャッシングを使用：
-- キャッシュは`Map<String, List<Article>>`（カテゴリ文字列をキーとして使用）
-- エラー時にキャッシュを無効化（該当カテゴリのみ）
-- キャッシュバイパスには`forceRefresh = true`を使用
-
-### エラーハンドリング
-型付きエラーには`NewsflowError` sealed classを使用：
-- `Unauthorized`: APIキー無効
-- `RateLimitExceeded`: レート制限超過
-- `BadRequest`: 不正なリクエスト
-- `ServerError`: サーバーエラー
-- `NetworkFailure`: ネットワーク接続失敗
-- `ArticleNotFound`: 記事が見つからない
-- `InvalidParameter`: パラメータ不正
-
-data/domainレイヤーからは標準Kotlin `Result<T>`を返す（失敗時は`NewsflowError`をラップ）。
-
-## 共通パターン
-
-### ユースケース実装
 ```kotlin
-internal class FetchArticlesUseCaseImpl(
-    private val repository: NewsRepository
-) : FetchArticlesUseCase {
-    override suspend fun invoke(category: String, forceRefresh: Boolean): Result<List<Article>> =
-        repository.fetchArticles(category = category, forceRefresh = forceRefresh)
+sealed class NewsflowError : Exception() {
+    data object Unauthorized : NewsflowError()          // APIキー無効
+    data object RateLimitExceeded : NewsflowError()     // レート制限超過
+    data object BadRequest : NewsflowError()            // 不正リクエスト
+    data object ServerError : NewsflowError()           // サーバーエラー
+    data class NetworkFailure(val cause: Throwable?) : NewsflowError()
+    data class ArticleNotFound(val id: String) : NewsflowError()
+    data class InvalidParameter(val message: String) : NewsflowError()
 }
 ```
 
-### Koinモジュール定義
+### Result型の使用
+
+data/domainレイヤーからは`Result<T>`を返す：
 ```kotlin
-val myModule = module {
-    singleOf(::MyRepositoryImpl) bind MyRepository::class
-    singleOf(::MyUseCaseImpl) bind MyUseCase::class
-}
+suspend fun fetchArticles(): Result<List<Article>>
+
+// 使用側
+useCase().fold(
+    onSuccess = { articles -> ... },
+    onFailure = { error -> (error as? NewsflowError)?.let { ... } }
+)
 ```
-
-### ViewModelステート更新
-```kotlin
-// ViewModelState定義（toState()でUiStateを導出）
-data class MyViewModelState(
-    val isLoading: Boolean = false,
-    val articles: List<Article> = emptyList(),
-    val error: NewsflowError? = null,
-) : ViewModelState<MyUiState> {
-    override fun toState(): MyUiState = when {
-        error != null -> MyUiState.Error(error)
-        else -> MyUiState.Stable(isLoading, articles)
-    }
-}
-
-// 内部ステート更新
-updateViewModelState {
-    copy(articles = newArticles, isLoading = false)
-}
-
-// 一度きりのイベント送信
-sendUiEffect(MyUiEffect.NavigateToDetail(articleId))
-```
-
-## API設定
-
-### NewsAPI Key設定
-`local.properties`に以下を追加：
-```properties
-NEWS_API_KEY=your_api_key_here
-```
-BuildKonfigが自動的にこの値を`core:network`モジュールに注入します。
 
 ## バージョン情報
 
 主要バージョン（`gradle/libs.versions.toml`参照）：
-- Kotlin: 2.2.20
-- AGP: 8.11.1
-- Koin: 4.1.1
-- Ktor: 3.3.2
-- Coroutines: 1.10.2
-- Detekt: 1.23.8
-- Turbine: 1.2.1
-- AndroidX Lifecycle: 2.9.1
-- Target SDK: 36、Min SDK: 29
-- JVM Target: 21
-- ライブラリバージョン: 0.2.0
+
+| ライブラリ | バージョン |
+|-----------|-----------|
+| Kotlin | 2.2.20 |
+| AGP | 8.11.1 |
+| Koin | 4.1.1 |
+| Ktor | 3.3.2 |
+| Coroutines | 1.10.2 |
+| Turbine | 1.2.1 |
+| AndroidX Lifecycle | 2.9.1 |
+| Target SDK | 36 |
+| Min SDK | 29 |
+| JVM Target | 21 |
