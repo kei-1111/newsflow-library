@@ -22,8 +22,16 @@ class ViewerViewModel(
 
     override fun onUiAction(uiAction: ViewerUiAction) {
         when (uiAction) {
-            ViewerUiAction.OnClickNavigateBack -> {
+            ViewerUiAction.OnClickBackButton -> {
                 sendUiEffect(ViewerUiEffect.NavigateBack)
+            }
+            is ViewerUiAction.OnClickShareButton -> {
+                sendUiEffect(
+                    ViewerUiEffect.ShareArticle(
+                        title = uiAction.article.title,
+                        url = uiAction.article.url,
+                    )
+                )
             }
         }
     }

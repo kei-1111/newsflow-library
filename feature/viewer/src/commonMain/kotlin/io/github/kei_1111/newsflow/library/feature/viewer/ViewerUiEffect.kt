@@ -4,4 +4,5 @@ import io.github.kei_1111.newsflow.library.core.mvi.UiEffect
 
 sealed interface ViewerUiEffect : UiEffect {
     data object NavigateBack : ViewerUiEffect
+    data class ShareArticle(val title: String, val url: String) : ViewerUiEffect
 }
