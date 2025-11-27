@@ -1,6 +1,5 @@
 package io.github.kei_1111.newsflow.library.feature.viewer
 
-import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
