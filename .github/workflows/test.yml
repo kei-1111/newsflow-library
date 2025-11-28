@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: macos-latest
@@ -29,3 +33,26 @@ jobs:
 
       - name: Run all tests
         run: ./gradlew allTests
+
+      - name: Generate Kover XML Report
+        run: ./gradlew koverXmlReport
+
+      - name: Add coverage report to PR
+        if: github.event_name == 'pull_request'
+        uses: mi-kas/kover-report@v1
+        with:
+          path: |
+            ${{ github.workspace }}/core/data/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/domain/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/logger/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/model/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/mvi/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/network/build/reports/kover/report.xml
+            ${{ github.workspace }}/core/test/build/reports/kover/report.xml
+            ${{ github.workspace }}/feature/home/build/reports/kover/report.xml
+            ${{ github.workspace }}/feature/viewer/build/reports/kover/report.xml
+            ${{ github.workspace }}/shared/build/reports/kover/report.xml
+          title: Code Coverage
+          update-comment: true
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
