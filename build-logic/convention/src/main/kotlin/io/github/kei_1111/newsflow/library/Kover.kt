@@ -7,6 +7,12 @@ internal fun Project.configureKover(
     extension: KoverProjectExtension,
 ) {
     extension.apply {
+        currentProject {
+            sources {
+                // jvmMainはKover出力のための設定のため除外
+                excludedSourceSets.add("jvmMain")
+            }
+        }
         reports {
             total {
                 xml {

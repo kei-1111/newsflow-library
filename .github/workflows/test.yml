@@ -40,6 +40,40 @@ jobs:
       - name: Generate Kover XML Report
         run: ./gradlew koverXmlReport
 
+      - name: Write Coverage Summary
+        if: always()
+        run: |
+          echo "## 📊 Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Module | Line Coverage | Covered/Total |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------------|---------------|" >> $GITHUB_STEP_SUMMARY
+
+          TOTAL_COVERED=0
+          TOTAL_LINES=0
+
+          for report in $(find . -path "*/build/reports/kover/report.xml" -type f | sort); do
+            MODULE=$(echo "$report" | sed 's|./\(.*\)/build/.*|\1|')
+
+            if [ -f "$report" ]; then
+              COVERED=$(grep -oP 'type="LINE"[^>]*covered="\K[0-9]+' "$report" | head -1 || echo "0")
+              MISSED=$(grep -oP 'type="LINE"[^>]*missed="\K[0-9]+' "$report" | head -1 || echo "0")
+              TOTAL=$((COVERED + MISSED))
+
+              if [ "$TOTAL" -gt 0 ]; then
+                PERCENT=$(echo "scale=1; $COVERED * 100 / $TOTAL" | bc)
+                echo "| $MODULE | ${PERCENT}% | $COVERED/$TOTAL |" >> $GITHUB_STEP_SUMMARY
+                TOTAL_COVERED=$((TOTAL_COVERED + COVERED))
+                TOTAL_LINES=$((TOTAL_LINES + TOTAL))
+              fi
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$TOTAL_LINES" -gt 0 ]; then
+            TOTAL_PERCENT=$(echo "scale=1; $TOTAL_COVERED * 100 / $TOTAL_LINES" | bc)
+            echo "**Total Project Coverage: ${TOTAL_PERCENT}%** ($TOTAL_COVERED/$TOTAL_LINES lines)" >> $GITHUB_STEP_SUMMARY
+          fi
+
       - name: Add coverage report to PR
         if: github.event_name == 'pull_request'
         uses: mi-kas/kover-report@v1
@@ -47,15 +81,12 @@ jobs:
           path: |
             ${{ github.workspace }}/core/data/build/reports/kover/report.xml
             ${{ github.workspace }}/core/domain/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/logger/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/model/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/mvi/build/reports/kover/report.xml
             ${{ github.workspace }}/core/network/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/test/build/reports/kover/report.xml
             ${{ github.workspace }}/feature/home/build/reports/kover/report.xml
             ${{ github.workspace }}/feature/viewer/build/reports/kover/report.xml
             ${{ github.workspace }}/shared/build/reports/kover/report.xml
-          title: Code Coverage
+          title: "📊 Test Coverage Report"
           update-comment: true
           min-coverage-overall: 0
           min-coverage-changed-files: 0
+          coverage-counter-type: LINE
