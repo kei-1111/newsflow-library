@@ -34,6 +34,9 @@ jobs:
       - name: Run all tests
         run: ./gradlew allTests
 
+      - name: Run JVM tests (for Kover coverage)
+        run: ./gradlew jvmTest
+
       - name: Generate Kover XML Report
         run: ./gradlew koverXmlReport
 
