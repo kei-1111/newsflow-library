@@ -22,6 +22,9 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
+                // JVMターゲットを追加（Koverカバレッジ測定用）
+                jvm()
+
                 androidLibrary {
                     compileSdk = libs.versions("android-compileSdk").toInt()
                     minSdk = libs.versions("android-minSdk").toInt()
