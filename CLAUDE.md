@@ -22,6 +22,8 @@ newsflow-libraryは、Android・iOS向けのKotlin Multiplatform (KMP)ニュー�
 | `./gradlew detekt` | 静的解析（コード品質チェック） |
 | `./gradlew clean build` | クリーン＆ビルド |
 | `./gradlew assemble` | 全XCFrameworkビルド |
+| `./gradlew koverHtmlReport` | カバレッジレポート生成（HTML） |
+| `./gradlew koverXmlReport` | カバレッジレポート生成（XML） |
 
 ### 重要ファイル
 
@@ -314,6 +316,7 @@ class XxxViewModelTest {
 | `newsflow.library.kmp.library` | KMPライブラリ基本設定 | coreモジュール, shared |
 | `newsflow.library.kmp.feature` | フィーチャーモジュール設定 | feature/* |
 | `newsflow.library.detekt` | 静的解析設定 | 全モジュール |
+| `newsflow.library.kover` | テストカバレッジ設定 | 全モジュール（自動適用） |
 | `newsflow.library.maven.publish` | Maven公開設定 | 公開対象モジュール |
 
 **新規モジュール作成時**:
@@ -360,6 +363,7 @@ useCase().fold(
 | Koin | 4.1.1 |
 | Ktor | 3.3.2 |
 | Coroutines | 1.10.2 |
+| Kover | 0.9.3 |
 | Turbine | 1.2.1 |
 | AndroidX Lifecycle | 2.9.1 |
 | Target SDK | 36 |
