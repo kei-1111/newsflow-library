@@ -84,8 +84,8 @@ jobs:
           for MODULE in $MODULES; do
             REPORT="./$MODULE/build/reports/kover/report.xml"
             if [ -f "$REPORT" ]; then
-              # XMLからLINEカバレッジを抽出（macOS互換）
-              LINE_DATA=$(grep 'type="LINE"' "$REPORT" | head -1)
+              # XMLからLINEカバレッジを抽出（レポート全体の合計 = 最後の<counter type="LINE">）
+              LINE_DATA=$(grep 'type="LINE"' "$REPORT" | tail -1)
               COVERED=$(echo "$LINE_DATA" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')
               MISSED=$(echo "$LINE_DATA" | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')
 
