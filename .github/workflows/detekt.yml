@@ -2,13 +2,18 @@ name: Detekt
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
 
 jobs:
   detekt:
-    name: Run Detekt
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    permissions:
+      contents: read
+      pull-requests: write
 
     steps:
       - name: Checkout code
@@ -19,10 +24,57 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run detekt
-        run: ./gradlew detekt
+      - name: Run Detekt
+        run: ./gradlew detekt --continue
+
+      - name: Write Detekt Summary
+        if: always()
+        run: |
+          echo "## Detekt Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          TOTAL_ERRORS=0
+          for report in $(find . -name "detekt.xml" -type f); do
+            MODULE=$(echo "$report" | sed 's|./\(.*\)/build/.*|\1|')
+            COUNT=$(grep -c '<error' "$report" 2>/dev/null || echo "0")
+            TOTAL_ERRORS=$((TOTAL_ERRORS + COUNT))
+
+            if [ "$COUNT" -gt 0 ]; then
+              echo "- **$MODULE**: $COUNT issue(s)" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "$TOTAL_ERRORS" -eq 0 ]; then
+            echo "✅ No issues found" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Total: **$TOTAL_ERRORS** issue(s)" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Setup reviewdog
+        if: always()
+        uses: reviewdog/action-setup@v1
+
+      - name: Run reviewdog
+        if: always() && github.event_name == 'pull_request'
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          find . -name "detekt.xml" -type f -exec cat {} + | reviewdog -f=checkstyle -name="detekt" -reporter=github-pr-review -level=warning
+
+      - name: Upload Detekt HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-reports
+          path: '**/build/reports/detekt/detekt.html'
+          retention-days: 7
