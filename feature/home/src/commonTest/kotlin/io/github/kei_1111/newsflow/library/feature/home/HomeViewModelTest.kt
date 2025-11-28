@@ -115,12 +115,15 @@ class HomeViewModelTest {
     fun `onSwipeNewsCategoryPage changes category but fails to fetch articles`() = runTest {
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.TECHNOLOGY
-        fetchArticlesUseCase.setResult(Result.failure(error))
+        // 初期化は成功させる
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
             skipInitialization()
 
+            // アクション実行時にエラーを返すように設定
+            fetchArticlesUseCase.setResult(Result.failure(error))
             viewModel.onUiAction(HomeUiAction.OnSwipNewsCategoryPage(category))
 
             val loadingState = awaitItem()
@@ -161,12 +164,15 @@ class HomeViewModelTest {
     fun `onClickNewsCategoryTag changes category but fails to fetch articles`() = runTest {
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.BUSINESS
-        fetchArticlesUseCase.setResult(Result.failure(error))
+        // 初期化は成功させる
+        fetchArticlesUseCase.setResult(Result.success(emptyList()))
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
             skipInitialization()
 
+            // アクション実行時にエラーを返すように設定
+            fetchArticlesUseCase.setResult(Result.failure(error))
             viewModel.onUiAction(HomeUiAction.OnClickNewsCategoryTag(category))
 
             val loadingState = awaitItem()
