@@ -45,10 +45,9 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
             testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
 
-            val successState = awaitItem()
+            val successState = expectMostRecentItem()
             assertIs<HomeUiState.Stable>(successState)
             assertFalse(successState.isLoading)
             assertEquals(NewsCategory.GENERAL, successState.currentNewsCategory)
@@ -63,10 +62,9 @@ class HomeViewModelTest {
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
-            skipItems(2) // StatefulBaseViewModel.uiState.stateIn + init->fetch->setLoading
-            testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
+            testDispatcher.scheduler.advanceUntilIdle() // 全ての状態遷移を完了させる
 
-            val errorState = awaitItem()
+            val errorState = expectMostRecentItem()
             assertIs<HomeUiState.Error>(errorState)
             assertEquals(error, errorState.error)
         }
