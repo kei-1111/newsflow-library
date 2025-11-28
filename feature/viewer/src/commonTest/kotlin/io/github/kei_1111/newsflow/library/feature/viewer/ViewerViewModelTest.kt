@@ -10,7 +10,6 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import platform.GameplayKit.GKState.Companion.state
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
