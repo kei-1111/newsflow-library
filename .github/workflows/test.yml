@@ -40,53 +40,91 @@ jobs:
       - name: Generate Kover XML Report
         run: ./gradlew koverXmlReport
 
-      - name: Write Coverage Summary
-        if: always()
+      - name: Generate Coverage Report
+        id: coverage
         run: |
-          echo "## 📊 Code Coverage Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Module | Line Coverage | Covered/Total |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------------|---------------|" >> $GITHUB_STEP_SUMMARY
+          # ステータス判定関数
+          get_status() {
+            local percent=$1
+            if awk "BEGIN {exit !($percent >= 90)}"; then
+              echo "✅ Excellent"
+            elif awk "BEGIN {exit !($percent >= 80)}"; then
+              echo "✅ Good"
+            elif awk "BEGIN {exit !($percent >= 60)}"; then
+              echo "⚠️ Fair"
+            else
+              echo "❌ Low"
+            fi
+          }
+
+          get_total_status() {
+            local percent=$1
+            if awk "BEGIN {exit !($percent >= 80)}"; then
+              echo "✅"
+            elif awk "BEGIN {exit !($percent >= 60)}"; then
+              echo "⚠️"
+            else
+              echo "❌"
+            fi
+          }
+
+          # カバレッジレポートを生成
+          REPORT_FILE="coverage_report.md"
+          echo "## 📊 Code Coverage Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "| Module | Coverage | Status |" >> $REPORT_FILE
+          echo "|--------|----------|--------|" >> $REPORT_FILE
 
           TOTAL_COVERED=0
-          TOTAL_LINES=0
+          TOTAL_MISSED=0
 
-          for report in $(find . -path "*/build/reports/kover/report.xml" -type f | sort); do
-            MODULE=$(echo "$report" | sed 's|./\(.*\)/build/.*|\1|')
+          # テストのあるモジュールのみ対象
+          MODULES="core/data core/domain core/network feature/home feature/viewer shared"
 
-            if [ -f "$report" ]; then
-              COVERED=$(grep -oP 'type="LINE"[^>]*covered="\K[0-9]+' "$report" | head -1 || echo "0")
-              MISSED=$(grep -oP 'type="LINE"[^>]*missed="\K[0-9]+' "$report" | head -1 || echo "0")
-              TOTAL=$((COVERED + MISSED))
+          for MODULE in $MODULES; do
+            REPORT="./$MODULE/build/reports/kover/report.xml"
+            if [ -f "$REPORT" ]; then
+              # XMLからLINEカバレッジを抽出（macOS互換）
+              LINE_DATA=$(grep 'type="LINE"' "$REPORT" | head -1)
+              COVERED=$(echo "$LINE_DATA" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')
+              MISSED=$(echo "$LINE_DATA" | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')
 
-              if [ "$TOTAL" -gt 0 ]; then
-                PERCENT=$(echo "scale=1; $COVERED * 100 / $TOTAL" | bc)
-                echo "| $MODULE | ${PERCENT}% | $COVERED/$TOTAL |" >> $GITHUB_STEP_SUMMARY
-                TOTAL_COVERED=$((TOTAL_COVERED + COVERED))
-                TOTAL_LINES=$((TOTAL_LINES + TOTAL))
+              if [ -n "$COVERED" ] && [ -n "$MISSED" ]; then
+                TOTAL=$((COVERED + MISSED))
+                if [ "$TOTAL" -gt 0 ]; then
+                  PERCENT=$(awk "BEGIN {printf \"%.1f\", $COVERED * 100 / $TOTAL}")
+                  STATUS=$(get_status $PERCENT)
+                  echo "| \`$MODULE\` | ${PERCENT}% ($COVERED/$TOTAL) | $STATUS |" >> $REPORT_FILE
+                  TOTAL_COVERED=$((TOTAL_COVERED + COVERED))
+                  TOTAL_MISSED=$((TOTAL_MISSED + MISSED))
+                fi
               fi
             fi
           done
 
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $REPORT_FILE
+          TOTAL_LINES=$((TOTAL_COVERED + TOTAL_MISSED))
           if [ "$TOTAL_LINES" -gt 0 ]; then
-            TOTAL_PERCENT=$(echo "scale=1; $TOTAL_COVERED * 100 / $TOTAL_LINES" | bc)
-            echo "**Total Project Coverage: ${TOTAL_PERCENT}%** ($TOTAL_COVERED/$TOTAL_LINES lines)" >> $GITHUB_STEP_SUMMARY
+            TOTAL_PERCENT=$(awk "BEGIN {printf \"%.1f\", $TOTAL_COVERED * 100 / $TOTAL_LINES}")
+            TOTAL_STATUS=$(get_total_status $TOTAL_PERCENT)
+            echo "**Total: ${TOTAL_PERCENT}%** ($TOTAL_COVERED/$TOTAL_LINES lines) $TOTAL_STATUS" >> $REPORT_FILE
           fi
 
-      - name: Add coverage report to PR
+          # GitHub Step Summaryにも出力
+          cat $REPORT_FILE >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage Comment to PR
         if: github.event_name == 'pull_request'
-        uses: mi-kas/kover-report@v1
-        with:
-          path: |
-            ${{ github.workspace }}/core/data/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/domain/build/reports/kover/report.xml
-            ${{ github.workspace }}/core/network/build/reports/kover/report.xml
-            ${{ github.workspace }}/feature/home/build/reports/kover/report.xml
-            ${{ github.workspace }}/feature/viewer/build/reports/kover/report.xml
-            ${{ github.workspace }}/shared/build/reports/kover/report.xml
-          title: "📊 Test Coverage Report"
-          update-comment: true
-          min-coverage-overall: 0
-          min-coverage-changed-files: 0
-          coverage-counter-type: LINE
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 既存のカバレッジコメントを検索して削除
+          COMMENT_ID=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq '.[] | select(.body | startswith("## 📊 Code Coverage Report")) | .id' | head -1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID -X DELETE
+          fi
+
+          # 新しいコメントを追加
+          gh pr comment ${{ github.event.pull_request.number }} --body-file coverage_report.md
