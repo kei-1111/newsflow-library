@@ -29,7 +29,6 @@ jobs:
 
       - name: Create local.properties
         run: |
-          
           echo "NEWS_API_KEY=${{ secrets.NEWS_API_KEY || 'test-api-key' }}" > local.properties
 
       - name: Run all tests
