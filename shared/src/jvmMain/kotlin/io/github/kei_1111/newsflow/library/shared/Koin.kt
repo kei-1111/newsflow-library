@@ -7,10 +7,10 @@ import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
 import io.github.kei_1111.newsflow.library.feature.viewer.di.viewerModule
 import org.koin.core.context.GlobalContext.startKoin
 
-actual fun initKoin(appContext: Any?) {
+actual fun initKoin(newsApiKey: String, appContext: Any?) {
     startKoin {
         modules(
-            networkModule,
+            networkModule(newsApiKey),
             dataModule,
             domainModule,
             homeModule,

@@ -1,6 +1,5 @@
 package io.github.kei_1111.newsflow.library.core.network.api
 
-import io.github.kei_1111.newsflow.library.core.network.config.NewsflowConfig
 import io.github.kei_1111.newsflow.library.core.network.model.NewsResponse
 import io.github.kei_1111.newsflow.library.core.network.util.safeApiCall
 import io.ktor.client.HttpClient
@@ -11,12 +10,13 @@ import io.ktor.client.request.parameter
 
 internal class NewsApiServiceImpl(
     private val client: HttpClient,
+    private val apiKey: String,
 ) : NewsApiService {
     override suspend fun fetchTopHeadlines(
         category: String
     ): Result<NewsResponse> = safeApiCall {
         client.get(BASE_URL + TOP_HEADLINES) {
-            header("X-Api-Key", NewsflowConfig.newsApiKey)
+            header("X-Api-Key", apiKey)
             parameter("category", category)
             parameter("country", COUNTRY)
         }.body()
