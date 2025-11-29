@@ -27,7 +27,7 @@ class NewsApiServiceImplTest {
         }
 
         val client = HttpClient(mockEngine) { defaultConfig() }
-        val service = NewsApiServiceImpl(client)
+        val service = NewsApiServiceImpl(client, "test-api-key")
 
         val result = service.fetchTopHeadlines("technology")
 
@@ -50,7 +50,7 @@ class NewsApiServiceImplTest {
         }
 
         val client = HttpClient(mockEngine) { defaultConfig() }
-        val service = NewsApiServiceImpl(client)
+        val service = NewsApiServiceImpl(client, "test-api-key")
 
         val result = service.fetchTopHeadlines("technology")
 
@@ -71,7 +71,7 @@ class NewsApiServiceImplTest {
         }
 
         val client = HttpClient(mockEngine) { defaultConfig() }
-        val service = NewsApiServiceImpl(client)
+        val service = NewsApiServiceImpl(client, "test-api-key")
 
         val result = service.fetchTopHeadlines("technology")
 
@@ -90,7 +90,7 @@ class NewsApiServiceImplTest {
         }
 
         val client = HttpClient(mockEngine) { defaultConfig() }
-        val service = NewsApiServiceImpl(client)
+        val service = NewsApiServiceImpl(client, "test-api-key")
 
         val result = service.fetchTopHeadlines("technology")
 
@@ -113,7 +113,7 @@ class NewsApiServiceImplTest {
         }
 
         val client = HttpClient(mockEngine) { defaultConfig() }
-        val service = NewsApiServiceImpl(client)
+        val service = NewsApiServiceImpl(client, "test-api-key")
 
         service.fetchTopHeadlines("technology")
     }

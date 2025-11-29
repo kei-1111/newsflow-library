@@ -78,13 +78,6 @@ ensureMinimumLoadingTime()
 - Android Studio with KMP plugin
 - Xcode（iOS開発時）
 
-### API Key設定
-
-`local.properties`に追加：
-```properties
-NEWS_API_KEY=your_api_key_here
-```
-
 ### 初回セットアップ
 
 ```bash

@@ -25,7 +25,7 @@ class KoinModuleTest : KoinTest {
     fun setup() {
         startKoin {
             modules(
-                networkModule,
+                networkModule("test-api-key"),
                 dataModule,
                 domainModule,
                 homeModule,
