@@ -27,6 +27,7 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.koin.test)
             implementation(libs.kotlin.test)
+            implementation(libs.ktor.client.core)
         }
     }
 }
