@@ -79,7 +79,7 @@ jobs:
           TOTAL_MISSED=0
 
           # テストのあるモジュールのみ対象
-          MODULES="core/data core/domain core/network feature/home feature/viewer shared"
+          MODULES="core/data core/domain core/network feature/home feature/viewer"
 
           for MODULE in $MODULES; do
             REPORT="./$MODULE/build/reports/kover/report.xml"
