@@ -16,7 +16,7 @@ internal class NewsApiServiceImpl(
         category: String
     ): Result<NewsResponse> = safeApiCall {
         client.get(BASE_URL + TOP_HEADLINES) {
-            header("X-Api-Key", NewsflowConfig.apiKey)
+            header("X-Api-Key", NewsflowConfig.newsApiKey)
             parameter("category", category)
             parameter("country", COUNTRY)
         }.body()
