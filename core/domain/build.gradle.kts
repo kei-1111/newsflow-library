@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.newsflow.library.kmp.library)
+    alias(libs.plugins.mokkery)
 }
 
 kotlin {

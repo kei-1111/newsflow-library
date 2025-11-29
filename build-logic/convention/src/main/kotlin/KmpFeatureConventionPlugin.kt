@@ -11,6 +11,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply(libs.plugin("newsflow.library.kmp.library").pluginId)
+                apply(libs.plugin("mokkery").pluginId)
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
