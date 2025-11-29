@@ -10,6 +10,7 @@ datetime = "0.6.1"
 detekt = "1.23.8"
 koin = "4.1.1"
 kotlin = "2.2.20"
+kover = "0.9.3"
 ktor = "3.3.2"
 newsflowLibrary = "0.2.5"
 serialization = "2.2.0"
@@ -42,6 +43,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 android-gradle = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }
 detekt-gradle = { group = "io.gitlab.arturbosch.detekt", name = "detekt-gradle-plugin", version.ref = "detekt" }
 kotlin-gradle = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
+kover-gradle = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover" }
 
 [plugins]
 android-kmp-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
@@ -49,9 +51,11 @@ build-konfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 kmp = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "serialization" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 # Convention Plugins
 newsflow-library-detekt = { id = "newsflow.library.detekt" }
 newsflow-library-kmp-feature = { id = "newsflow.library.kmp.feature" }
 newsflow-library-kmp-library = { id = "newsflow.library.kmp.library" }
+newsflow-library-kover = { id = "newsflow.library.kover" }
 newsflow-library-maven-publish = { id = "newsflow.library.maven.publish" }

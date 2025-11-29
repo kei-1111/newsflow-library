@@ -17,10 +17,14 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
                 apply(libs.plugin("android.kmp.library").pluginId)
                 apply(libs.plugin("kmp").pluginId)
                 apply(libs.plugin("newsflow.library.detekt").pluginId)
+                apply(libs.plugin("newsflow.library.kover").pluginId)
                 apply(libs.plugin("newsflow.library.maven.publish").pluginId)
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
+                // JVMターゲットを追加（Koverカバレッジ測定用）
+                jvm()
+
                 androidLibrary {
                     compileSdk = libs.versions("android-compileSdk").toInt()
                     minSdk = libs.versions("android-minSdk").toInt()
