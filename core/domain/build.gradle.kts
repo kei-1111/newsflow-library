@@ -16,8 +16,6 @@ kotlin {
             implementation(libs.koin.core)
         }
         commonTest.dependencies {
-            implementation(projects.core.test)
-            
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }
