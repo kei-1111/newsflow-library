@@ -6,6 +6,7 @@ import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
 import io.github.kei_1111.newsflow.library.core.network.api.NewsApiService
+import io.github.kei_1111.newsflow.library.core.network.config.NewsflowConfig
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.HomeViewModel
 import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
@@ -26,6 +27,7 @@ class KoinModuleTest : KoinTest {
 
     @BeforeTest
     fun setup() {
+        NewsflowConfig.initialize("test-api-key")
         startKoin {
             modules(
                 networkModule,
