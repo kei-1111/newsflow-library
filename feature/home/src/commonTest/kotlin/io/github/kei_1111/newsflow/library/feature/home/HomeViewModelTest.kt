@@ -2,11 +2,14 @@ package io.github.kei_1111.newsflow.library.feature.home
 
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
+import dev.mokkery.answering.returns
+import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
-import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
-import io.github.kei_1111.newsflow.library.core.test.model.createTestArticles
-import io.github.kei_1111.newsflow.library.core.test.usecase.FakeFetchTopHeadlineArticlesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -25,12 +28,10 @@ import kotlin.test.assertTrue
 class HomeViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var fetchArticlesUseCase: FakeFetchTopHeadlineArticlesUseCase
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        fetchArticlesUseCase = FakeFetchTopHeadlineArticlesUseCase()
     }
 
     @AfterTest
@@ -40,8 +41,9 @@ class HomeViewModelTest {
 
     @Test
     fun `initialization fetches GENERAL category articles successfully`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
-        fetchArticlesUseCase.setResult(Result.success(articles))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -57,8 +59,9 @@ class HomeViewModelTest {
 
     @Test
     fun `initialization fails to fetch articles and transitions to error state`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
-        fetchArticlesUseCase.setResult(Result.failure(error))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -72,7 +75,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickArticleCard emits NavigateViewer effect with article url`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
@@ -87,9 +91,10 @@ class HomeViewModelTest {
 
     @Test
     fun `onSwipeNewsCategoryPage changes category and fetches articles successfully`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
         val category = NewsCategory.TECHNOLOGY
-        fetchArticlesUseCase.setResult(Result.success(articles))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -111,17 +116,18 @@ class HomeViewModelTest {
 
     @Test
     fun `onSwipeNewsCategoryPage changes category but fails to fetch articles`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.TECHNOLOGY
         // 初期化は成功させる
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
             skipInitialization()
 
             // アクション実行時にエラーを返すように設定
-            fetchArticlesUseCase.setResult(Result.failure(error))
+            everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
             viewModel.onUiAction(HomeUiAction.OnSwipNewsCategoryPage(category))
 
             val loadingState = awaitItem()
@@ -136,9 +142,10 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickNewsCategoryTag changes category and fetches articles successfully`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
         val category = NewsCategory.BUSINESS
-        fetchArticlesUseCase.setResult(Result.success(articles))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -160,17 +167,18 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickNewsCategoryTag changes category but fails to fetch articles`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         val category = NewsCategory.BUSINESS
         // 初期化は成功させる
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
             skipInitialization()
 
             // アクション実行時にエラーを返すように設定
-            fetchArticlesUseCase.setResult(Result.failure(error))
+            everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
             viewModel.onUiAction(HomeUiAction.OnClickNewsCategoryTag(category))
 
             val loadingState = awaitItem()
@@ -185,9 +193,10 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickRetryButton refetches current category articles successfully`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
         val category = NewsCategory.GENERAL // default Category
-        fetchArticlesUseCase.setResult(Result.success(articles))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -209,8 +218,9 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickRetryButton refetches articles but fails`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network error")
-        fetchArticlesUseCase.setResult(Result.failure(error))
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiState.test {
@@ -230,7 +240,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickMoreBottom updates selectedArticle in state`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
@@ -247,7 +258,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onDismissArticleOverviewBottomSheet clears selectedArticle`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
@@ -270,7 +282,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickCopyUrlButton emits CopyUrl effect when article is selected`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
@@ -287,7 +300,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickCopyUrlButton does nothing when no article is selected`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiEffect.test {
@@ -299,7 +313,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickShareButton emits ShareArticle effect when article is selected`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
@@ -318,7 +333,8 @@ class HomeViewModelTest {
 
     @Test
     fun `onClickShareButton does nothing when no article is selected`() = runTest {
-        fetchArticlesUseCase.setResult(Result.success(emptyList()))
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
 
         viewModel.uiEffect.test {
@@ -333,4 +349,18 @@ class HomeViewModelTest {
         testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
         skipItems(1) // init->fetch->handleXXXX
     }
+
+    private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
+        id = "$index",
+        source = "$prefix Source $index",
+        author = "$prefix Author $index",
+        title = "$prefix Title $index",
+        description = "$prefix Description $index",
+        url = "https://example.com/$prefix-$index",
+        imageUrl = "https://example.com/image-$index.jpg",
+        publishedAt = 1234567890000L + index,
+    )
+
+    private fun createTestArticles(count: Int, prefix: String = "Test") =
+        List(count) { createTestArticle(it + 1, prefix) }
 }
