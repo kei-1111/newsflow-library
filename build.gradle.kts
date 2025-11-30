@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kmp) apply false
     alias(libs.plugins.kover) apply false
+    alias(libs.plugins.mokkery) apply false
 
     // Convention Plugins
     alias(libs.plugins.newsflow.library.detekt) apply false

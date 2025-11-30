@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.newsflow.library.kmp.library)
+    alias(libs.plugins.mokkery)
 }
 
 kotlin {
@@ -15,8 +16,6 @@ kotlin {
             implementation(libs.koin.core)
         }
         commonTest.dependencies {
-            implementation(projects.core.test)
-            
             implementation(libs.kotlin.test)
             implementation(libs.kotlinx.coroutines.test)
         }

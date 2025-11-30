@@ -1,9 +1,15 @@
 package io.github.kei_1111.newsflow.library.feature.viewer
 
 import app.cash.turbine.test
+import dev.mokkery.answering.returns
+import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify.VerifyMode.Companion.exactly
+import dev.mokkery.verifySuspend
+import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
+import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
-import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
-import io.github.kei_1111.newsflow.library.core.test.usecase.FakeGetArticleByIdUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -20,12 +26,10 @@ import kotlin.test.assertIs
 class ViewerViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var getArticleByIdUseCase: FakeGetArticleByIdUseCase
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        getArticleByIdUseCase = FakeGetArticleByIdUseCase()
     }
 
     @AfterTest
@@ -35,8 +39,9 @@ class ViewerViewModelTest {
 
     @Test
     fun `initialization fetches article successfully`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -53,8 +58,9 @@ class ViewerViewModelTest {
 
     @Test
     fun `initialization fails to get article and transitions to error state`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val error = NewsflowError.InternalError.ArticleNotFound("Article Not Found")
-        getArticleByIdUseCase.setResult(Result.failure(error))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.failure(error)
         val viewModel = ViewerViewModel(
             articleId = "valid-id",
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -71,6 +77,7 @@ class ViewerViewModelTest {
 
     @Test
     fun `initialization with blank articleId transitions to error state immediately`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "",
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -84,11 +91,12 @@ class ViewerViewModelTest {
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
-        assertEquals(0, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(0)) { getArticleByIdUseCase(any()) }
     }
 
     @Test
     fun `initialization with whitespace only articleId transitions to error state immediately`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "   ",
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -102,13 +110,14 @@ class ViewerViewModelTest {
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
-        assertEquals(0, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(0)) { getArticleByIdUseCase(any()) }
     }
 
     @Test
     fun `onClickBackButton emits NavigateBack effect`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -124,8 +133,9 @@ class ViewerViewModelTest {
 
     @Test
     fun `onClickShareButton emits ShareArticle effect with correct title and url`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -143,9 +153,10 @@ class ViewerViewModelTest {
 
     @Test
     fun `article fetch passes correct articleId to use case`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val articleId = "test-article-123"
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = articleId,
             getArticleByIdUseCase = getArticleByIdUseCase,
@@ -155,7 +166,17 @@ class ViewerViewModelTest {
             skipItems(2) // init{}が終わるまでスキップ
         }
 
-        assertEquals(articleId, getArticleByIdUseCase.lastInvokedId)
-        assertEquals(1, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(1)) { getArticleByIdUseCase(articleId) }
     }
+
+    private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
+        id = "$index",
+        source = "$prefix Source $index",
+        author = "$prefix Author $index",
+        title = "$prefix Title $index",
+        description = "$prefix Description $index",
+        url = "https://example.com/$prefix-$index",
+        imageUrl = "https://example.com/image-$index.jpg",
+        publishedAt = 1234567890000L + index,
+    )
 }
