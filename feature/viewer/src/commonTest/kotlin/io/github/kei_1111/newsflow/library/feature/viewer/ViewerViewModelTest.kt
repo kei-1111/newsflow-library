@@ -47,11 +47,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(1) // LoadingはスキップされてしまうためskipItem(1)
 
             val state = awaitItem()
-            assertIs<ViewerUiState.Stable>(state)
+            assertIs<ViewerState.Stable>(state)
             assertEquals(article, state.viewingArticle)
         }
     }
@@ -66,11 +66,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(1) // LoadingはスキップされてしまうためskipItem(1)
 
             val state = awaitItem()
-            assertIs<ViewerUiState.Error>(state)
+            assertIs<ViewerState.Error>(state)
             assertEquals(error, state.error)
         }
     }
@@ -83,11 +83,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
-            skipItems(1) // StatefulBaseViewModel.uiState.stateIn
+        viewModel.state.test {
+            skipItems(1) // StatefulBaseViewModel.state.stateIn
 
             val errorState = awaitItem()
-            assertIs<ViewerUiState.Error>(errorState)
+            assertIs<ViewerState.Error>(errorState)
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
@@ -102,11 +102,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
-            skipItems(1) // StatefulBaseViewModel.uiState.stateIn
+        viewModel.state.test {
+            skipItems(1) // StatefulBaseViewModel.state.stateIn
 
             val errorState = awaitItem()
-            assertIs<ViewerUiState.Error>(errorState)
+            assertIs<ViewerState.Error>(errorState)
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
@@ -114,7 +114,7 @@ class ViewerViewModelTest {
     }
 
     @Test
-    fun `onClickBackButton emits NavigateBack effect`() = runTest {
+    fun `NavigateBack intent emits NavigateBack effect`() = runTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
@@ -123,16 +123,16 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiEffect.test {
-            viewModel.onUiAction(ViewerUiAction.OnClickBackButton)
+        viewModel.effect.test {
+            viewModel.onIntent(ViewerIntent.NavigateBack)
 
             val effect = awaitItem()
-            assertIs<ViewerUiEffect.NavigateBack>(effect)
+            assertIs<ViewerEffect.NavigateBack>(effect)
         }
     }
 
     @Test
-    fun `onClickShareButton emits ShareArticle effect with correct title and url`() = runTest {
+    fun `ShareArticle intent emits ShareArticle effect with correct title and url`() = runTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
@@ -141,11 +141,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiEffect.test {
-            viewModel.onUiAction(ViewerUiAction.OnClickShareButton(article))
+        viewModel.effect.test {
+            viewModel.onIntent(ViewerIntent.ShareArticle(article))
 
             val effect = awaitItem()
-            assertIs<ViewerUiEffect.ShareArticle>(effect)
+            assertIs<ViewerEffect.ShareArticle>(effect)
             assertEquals(article.title, effect.title)
             assertEquals(article.url, effect.url)
         }
@@ -162,7 +162,7 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(2) // init{}が終わるまでスキップ
         }
 
