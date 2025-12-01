@@ -12,18 +12,18 @@ data class HomeViewModelState(
     val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
     val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     val error: NewsflowError? = null,
-) : ViewModelState<HomeUiState> {
+) : ViewModelState<HomeState> {
     enum class StatusType { STABLE, ERROR }
 
-    override fun toState(): HomeUiState = when (statusType) {
-        StatusType.STABLE -> HomeUiState.Stable(
+    override fun toState(): HomeState = when (statusType) {
+        StatusType.STABLE -> HomeState.Stable(
             isLoading = isLoading,
             selectedArticle = selectedArticle,
             currentNewsCategory = currentNewsCategory,
             articlesByCategory = articlesByCategory
         )
 
-        StatusType.ERROR -> HomeUiState.Error(
+        StatusType.ERROR -> HomeState.Error(
             error = requireNotNull(error) { "Error must not be null when statusType is ERROR" }
         )
     }
