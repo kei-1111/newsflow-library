@@ -2,18 +2,18 @@ package io.github.kei_1111.newsflow.library.feature.viewer
 
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
-import io.github.kei_1111.newsflow.library.core.mvi.stateful.UiState
+import io.github.kei_1111.newsflow.library.core.mvi.stateful.State
 
-sealed interface ViewerUiState : UiState {
-    data object Init : ViewerUiState
+sealed interface ViewerState : State {
+    data object Init : ViewerState
 
-    data object Loading : ViewerUiState
+    data object Loading : ViewerState
 
     data class Stable(
         val viewingArticle: Article,
-    ) : ViewerUiState
+    ) : ViewerState
 
     data class Error(
         val error: NewsflowError,
-    ) : ViewerUiState
+    ) : ViewerState
 }
