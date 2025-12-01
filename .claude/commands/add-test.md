@@ -68,13 +68,13 @@ class {ClassName}Test {
         val viewModel = {ClassName}(/* 依存関係 */)
 
         // Assert
-        viewModel.uiState.test {
+        viewModel.state.test {
             val state = awaitItem()
             // 初期状態のアサーション
         }
     }
 
-    // 各UiActionに対するテストケースを生成
+    // 各Intentに対するテストケースを生成
     // 成功パスと失敗パスの両方を含める
 }
 ```

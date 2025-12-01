@@ -82,11 +82,11 @@ data class HomeViewModelState(
    val initialUserSetting: UserSetting? = null,
    val currentUserSetting: UserSetting? = null,
    val error: NewsflowError? = null,
-) : ViewModelState<HomeUiState> {
+) : ViewModelState<HomeState> {
    enum class StatusType { STABLE, ERROR }
 
-   override fun toState(): HomeUiState = when (statusType) {
-      StatusType.STABLE -> HomeUiState.Stable(
+   override fun toState(): HomeState = when (statusType) {
+      StatusType.STABLE -> HomeState.Stable(
          isLoading = isLoading,
          isSaveButtonEnabled = initialUserSetting != currentUserSetting,
          selectedArticle = selectedArticle,
@@ -95,7 +95,7 @@ data class HomeViewModelState(
          currentUserSetting = currentUserSetting,
       )
 
-      StatusType.ERROR -> HomeUiState.Error(
+      StatusType.ERROR -> HomeState.Error(
          error = requireNotNull(error) { "Error must not be null when statusType is ERROR" }
       )
    }

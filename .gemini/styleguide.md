@@ -39,69 +39,69 @@ Each feature module should have the following files:
 ```
 feature/xxx/src/commonMain/kotlin/.../
 ├── XxxViewModel.kt       # ViewModel implementation
-├── XxxUiState.kt         # Public UI state (sealed interface)
-├── XxxUiAction.kt        # User actions
-├── XxxUiEffect.kt        # One-time side effects
+├── XxxState.kt           # Public UI state (sealed interface)
+├── XxxIntent.kt          # User intents
+├── XxxEffect.kt          # One-time side effects
 ├── XxxViewModelState.kt  # Internal mutable state (data class)
 └── XxxModule.kt          # Koin module definition
 ```
 
 ## ViewModel Implementation
-* **Inherit from StatefulBaseViewModel:** Use `StatefulBaseViewModel<ViewModelState, UiState, UiAction, UiEffect>`.
-* **Override Factory Methods:** Override `createInitialViewModelState()` and `createInitialUiState()`.
+* **Inherit from StatefulBaseViewModel:** Use `StatefulBaseViewModel<ViewModelState, State, Intent, Effect>`.
+* **Override Factory Methods:** Override `createInitialViewModelState()` and `createInitialState()`.
 * **Internal State Management:** Use `updateViewModelState { copy(...) }` for state updates.
-* **One-time Events:** Use `sendUiEffect()` for navigation and toast events.
+* **One-time Events:** Use `sendEffect()` for navigation and toast events.
 * **Minimum Loading Time:** Use `ensureMinimumLoadingTime()` for consistent UX.
 
 ```kotlin
 class XxxViewModel(
     private val useCase: XxxUseCase,
-) : StatefulBaseViewModel<XxxViewModelState, XxxUiState, XxxUiAction, XxxUiEffect>() {
+) : StatefulBaseViewModel<XxxViewModelState, XxxState, XxxIntent, XxxEffect>() {
 
     override fun createInitialViewModelState(): XxxViewModelState = XxxViewModelState()
-    override fun createInitialUiState(): XxxUiState = XxxUiState.Stable()
+    override fun createInitialState(): XxxState = XxxState.Stable()
 
-    override fun onUiAction(uiAction: XxxUiAction) {
-        when (uiAction) {
-            is XxxUiAction.OnClickLoad -> loadData()
+    override fun onIntent(intent: XxxIntent) {
+        when (intent) {
+            is XxxIntent.Load -> loadData()
         }
     }
 }
 ```
 
 ## ViewModelState
-* **Implement ViewModelState Interface:** Must implement `ViewModelState<UiState>`.
+* **Implement ViewModelState Interface:** Must implement `ViewModelState<State>`.
 * **Pure toState() Function:** The `toState()` method must be a pure function with no side effects.
-* **Derive UiState:** UiState should be derived from ViewModelState via `toState()`.
+* **Derive State:** State should be derived from ViewModelState via `toState()`.
 
 ```kotlin
 data class XxxViewModelState(
     val isLoading: Boolean = false,
     val data: List<Item> = emptyList(),
     val error: NewsflowError? = null,
-) : ViewModelState<XxxUiState> {
-    override fun toState(): XxxUiState = when {
-        error != null -> XxxUiState.Error(error)
-        else -> XxxUiState.Stable(isLoading, data)
+) : ViewModelState<XxxState> {
+    override fun toState(): XxxState = when {
+        error != null -> XxxState.Error(error)
+        else -> XxxState.Stable(isLoading, data)
     }
 }
 ```
 
-## UiState
-* **Sealed Interface:** Use sealed interface for UiState.
-* **Immutable:** UiState must be immutable.
+## State
+* **Sealed Interface:** Use sealed interface for State.
+* **Immutable:** State must be immutable.
 * **Stable State:** Include loading flag in Stable state for partial loading.
 
 ```kotlin
-sealed interface XxxUiState {
+sealed interface XxxState : State {
     data class Stable(
         val isLoading: Boolean,
         val data: List<Item>,
-    ) : XxxUiState
+    ) : XxxState
 
     data class Error(
         val error: NewsflowError,
-    ) : XxxUiState
+    ) : XxxState
 }
 ```
 
@@ -231,9 +231,9 @@ val myModule = module {
 
 ## Classes
 * **ViewModel:** `XxxViewModel` (e.g., `HomeViewModel`, `ViewerViewModel`)
-* **UiState:** `XxxUiState` (e.g., `HomeUiState`)
-* **UiAction:** `XxxUiAction` (e.g., `HomeUiAction`)
-* **UiEffect:** `XxxUiEffect` (e.g., `HomeUiEffect`)
+* **State:** `XxxState` (e.g., `HomeState`)
+* **Intent:** `XxxIntent` (e.g., `HomeIntent`)
+* **Effect:** `XxxEffect` (e.g., `HomeEffect`)
 * **ViewModelState:** `XxxViewModelState` (e.g., `HomeViewModelState`)
 * **UseCase:** `VerbNounUseCase` (e.g., `FetchTopHeadlineArticlesUseCase`, `GetArticleByIdUseCase`)
 * **Repository:** `XxxRepository` (e.g., `NewsRepository`)
@@ -242,19 +242,19 @@ val myModule = module {
 ## Functions
 * **UseCase Invoke:** `operator fun invoke()`
 * **Repository Methods:** `fetchXxx()`, `getXxx()`, `saveXxx()`, `deleteXxx()`
-* **ViewModel Actions:** `onUiAction()`, `loadXxx()`, `refreshXxx()`
+* **ViewModel Actions:** `onIntent()`, `loadXxx()`, `refreshXxx()`
 
-## UiAction Naming
-* **Pattern:** `OnAction` or `OnActionTarget`
-* **Click Actions:** `OnClickRetryButton`, `OnClickArticle`
-* **Change Actions:** `OnChangeCategory`, `OnChangeSearchQuery`
-* **Load Actions:** `OnLoadInitialData`, `OnRefresh`
+## Intent Naming
+* **Pattern:** Intent-based naming (what you want to do), NOT operation-based (what you clicked)
+* **Navigation:** `NavigateViewer`, `NavigateBack`
+* **Change:** `ChangeCategory`, `ChangeSearchQuery`
+* **Actions:** `RetryLoad`, `ShareArticle`, `CopyUrl`
 
 ```kotlin
-sealed interface HomeUiAction {
-    data object OnClickRetryButton : HomeUiAction
-    data class OnClickArticle(val articleId: String) : HomeUiAction
-    data class OnChangeCategory(val category: NewsCategory) : HomeUiAction
+sealed interface HomeIntent : Intent {
+    data class NavigateViewer(val article: Article) : HomeIntent
+    data class ChangeCategory(val category: NewsCategory) : HomeIntent
+    data object RetryLoad : HomeIntent
 }
 ```
 
@@ -300,8 +300,8 @@ class XxxViewModelTest {
     fun `when load succeeds then state is stable with data`() = runTest {
         fakeUseCase.setResult(Result.success(testData))
 
-        viewModel.uiState.test {
-            viewModel.onUiAction(XxxUiAction.OnClickLoad)
+        viewModel.state.test {
+            viewModel.onIntent(XxxIntent.Load)
             // Assertions
         }
     }
@@ -329,7 +329,7 @@ class XxxViewModelTest {
 ## Forbidden Patterns
 * **No Cross-Feature Dependencies:** Feature modules must not depend on each other.
 * **No Direct Repository in ViewModel:** Always use UseCase.
-* **No Mutable UiState:** UiState must be immutable; use ViewModelState for mutability.
+* **No Mutable State:** State must be immutable; use ViewModelState for mutability.
 * **No Exceptions from Data/Domain:** Return Result type instead.
 
 # Tooling
@@ -341,35 +341,35 @@ class XxxViewModelTest {
 
 ## Complete Feature Implementation
 
-### UiState
+### State
 ```kotlin
-sealed interface HomeUiState {
+sealed interface HomeState : State {
     data class Stable(
         val isLoading: Boolean,
         val currentCategory: NewsCategory,
         val articles: List<Article>,
-    ) : HomeUiState
+    ) : HomeState
 
     data class Error(
         val error: NewsflowError,
-    ) : HomeUiState
+    ) : HomeState
 }
 ```
 
-### UiAction
+### Intent
 ```kotlin
-sealed interface HomeUiAction {
-    data object OnClickRetryButton : HomeUiAction
-    data class OnClickArticle(val articleId: String) : HomeUiAction
-    data class OnChangeCategory(val category: NewsCategory) : HomeUiAction
+sealed interface HomeIntent : Intent {
+    data class NavigateViewer(val article: Article) : HomeIntent
+    data class ChangeCategory(val category: NewsCategory) : HomeIntent
+    data object RetryLoad : HomeIntent
 }
 ```
 
-### UiEffect
+### Effect
 ```kotlin
-sealed interface HomeUiEffect {
-    data class NavigateToViewer(val articleId: String) : HomeUiEffect
-    data class ShowError(val message: String) : HomeUiEffect
+sealed interface HomeEffect : Effect {
+    data class NavigateViewer(val id: String) : HomeEffect
+    data class ShowError(val message: String) : HomeEffect
 }
 ```
 
@@ -380,10 +380,10 @@ data class HomeViewModelState(
     val currentCategory: NewsCategory = NewsCategory.GENERAL,
     val articles: List<Article> = emptyList(),
     val error: NewsflowError? = null,
-) : ViewModelState<HomeUiState> {
-    override fun toState(): HomeUiState = when {
-        error != null -> HomeUiState.Error(error)
-        else -> HomeUiState.Stable(isLoading, currentCategory, articles)
+) : ViewModelState<HomeState> {
+    override fun toState(): HomeState = when {
+        error != null -> HomeState.Error(error)
+        else -> HomeState.Stable(isLoading, currentCategory, articles)
     }
 }
 ```
@@ -392,16 +392,16 @@ data class HomeViewModelState(
 ```kotlin
 class HomeViewModel(
     private val fetchArticlesUseCase: FetchTopHeadlineArticlesUseCase,
-) : StatefulBaseViewModel<HomeViewModelState, HomeUiState, HomeUiAction, HomeUiEffect>() {
+) : StatefulBaseViewModel<HomeViewModelState, HomeState, HomeIntent, HomeEffect>() {
 
     override fun createInitialViewModelState(): HomeViewModelState = HomeViewModelState()
-    override fun createInitialUiState(): HomeUiState = HomeUiState.Stable()
+    override fun createInitialState(): HomeState = HomeState.Stable()
 
-    override fun onUiAction(uiAction: HomeUiAction) {
-        when (uiAction) {
-            is HomeUiAction.OnClickRetryButton -> loadArticles(forceRefresh = true)
-            is HomeUiAction.OnClickArticle -> navigateToViewer(uiAction.articleId)
-            is HomeUiAction.OnChangeCategory -> changeCategory(uiAction.category)
+    override fun onIntent(intent: HomeIntent) {
+        when (intent) {
+            is HomeIntent.RetryLoad -> loadArticles(forceRefresh = true)
+            is HomeIntent.NavigateViewer -> navigateToViewer(intent.article.id)
+            is HomeIntent.ChangeCategory -> changeCategory(intent.category)
         }
     }
 
@@ -426,7 +426,7 @@ class HomeViewModel(
     }
 
     private fun navigateToViewer(articleId: String) {
-        sendUiEffect(HomeUiEffect.NavigateToViewer(articleId))
+        sendEffect(HomeEffect.NavigateViewer(articleId))
     }
 
     private fun changeCategory(category: NewsCategory) {

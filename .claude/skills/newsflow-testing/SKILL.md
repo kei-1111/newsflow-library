@@ -53,10 +53,10 @@ class {Name}ViewModelTest {
         fakeUseCase.setResult(Result.success(createTestArticles(3)))
         val viewModel = {Name}ViewModel(fakeUseCase)
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(2)
             testDispatcher.scheduler.advanceUntilIdle()
-            assertIs<{Name}UiState.Stable>(awaitItem())
+            assertIs<{Name}State.Stable>(awaitItem())
         }
     }
 }
@@ -67,8 +67,8 @@ class {Name}ViewModelTest {
 ### ViewModel
 - [ ] 初期化成功 → Stable状態
 - [ ] 初期化失敗 → Error状態
-- [ ] 各UiActionの処理
-- [ ] UiEffect発行
+- [ ] 各Intentの処理
+- [ ] Effect発行
 
 ### UseCase
 - [ ] Repository成功時 → Result.success
