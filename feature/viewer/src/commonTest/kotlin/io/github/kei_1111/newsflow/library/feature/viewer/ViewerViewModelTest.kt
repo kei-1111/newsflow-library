@@ -169,6 +169,64 @@ class ViewerViewModelTest {
         verifySuspend(exactly(1)) { getArticleByIdUseCase(articleId) }
     }
 
+    @Test
+    fun `StartWebViewLoading intent sets isWebViewLoading to true`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // 初期状態をスキップ
+
+            // 初期状態はisWebViewLoading = true
+            val initialState = awaitItem()
+            assertIs<ViewerState.Stable>(initialState)
+            assertEquals(true, initialState.isWebViewLoading)
+
+            // FinishWebViewLoadingでfalseにしてからStartWebViewLoadingをテスト
+            viewModel.onIntent(ViewerIntent.FinishWebViewLoading)
+            val finishedState = awaitItem()
+            assertIs<ViewerState.Stable>(finishedState)
+            assertEquals(false, finishedState.isWebViewLoading)
+
+            // StartWebViewLoadingでtrueに戻る
+            viewModel.onIntent(ViewerIntent.StartWebViewLoading)
+            val startedState = awaitItem()
+            assertIs<ViewerState.Stable>(startedState)
+            assertEquals(true, startedState.isWebViewLoading)
+        }
+    }
+
+    @Test
+    fun `FinishWebViewLoading intent sets isWebViewLoading to false`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // 初期状態をスキップ
+
+            // 初期状態はisWebViewLoading = true
+            val initialState = awaitItem()
+            assertIs<ViewerState.Stable>(initialState)
+            assertEquals(true, initialState.isWebViewLoading)
+
+            // FinishWebViewLoadingでfalseに変更
+            viewModel.onIntent(ViewerIntent.FinishWebViewLoading)
+            val finishedState = awaitItem()
+            assertIs<ViewerState.Stable>(finishedState)
+            assertEquals(false, finishedState.isWebViewLoading)
+        }
+    }
+
     private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
         id = "$index",
         source = "$prefix Source $index",

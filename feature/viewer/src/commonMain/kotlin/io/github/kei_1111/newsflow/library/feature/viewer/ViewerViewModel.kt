@@ -33,6 +33,12 @@ class ViewerViewModel(
                     )
                 )
             }
+            is ViewerIntent.StartWebViewLoading -> {
+                updateViewModelState { copy(isWebViewLoading = true) }
+            }
+            is ViewerIntent.FinishWebViewLoading -> {
+                updateViewModelState { copy(isWebViewLoading = false) }
+            }
         }
     }
 
