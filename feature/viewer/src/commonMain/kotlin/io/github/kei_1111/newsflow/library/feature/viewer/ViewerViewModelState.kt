@@ -6,6 +6,7 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
 
 data class ViewerViewModelState(
     val statusType: StatusType = StatusType.INIT,
+    val isWebViewLoading: Boolean = true,
     val viewingArticle: Article? = null,
     val error: NewsflowError? = null,
 ) : ViewModelState<ViewerState> {
@@ -17,6 +18,7 @@ data class ViewerViewModelState(
         StatusType.LOADING -> ViewerState.Loading
 
         StatusType.STABLE -> ViewerState.Stable(
+            isWebViewLoading = isWebViewLoading,
             viewingArticle = requireNotNull(viewingArticle) { "Article must not be null when statusType is STABLE" }
         )
 

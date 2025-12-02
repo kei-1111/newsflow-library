@@ -10,6 +10,7 @@ sealed interface ViewerState : State {
     data object Loading : ViewerState
 
     data class Stable(
+        val isWebViewLoading: Boolean,
         val viewingArticle: Article,
     ) : ViewerState
 
