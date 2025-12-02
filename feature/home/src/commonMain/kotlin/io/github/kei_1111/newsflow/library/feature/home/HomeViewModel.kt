@@ -54,6 +54,9 @@ class HomeViewModel(
             is HomeIntent.RetryLoad -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
+            is HomeIntent.Refresh -> {
+                refreshArticles()
+            }
         }
     }
 
@@ -114,6 +117,52 @@ class HomeViewModel(
             copy(
                 statusType = HomeViewModelState.StatusType.ERROR,
                 isLoading = false,
+                error = error as? NewsflowError
+            )
+        }
+    }
+
+    private fun refreshArticles() {
+        setRefreshingState()
+        viewModelScope.launch {
+            val category = _viewModelState.value.currentNewsCategory
+            fetchTopHeadlineArticlesUseCase.invoke(category.value, forceRefresh = true)
+                .onSuccess { data ->
+                    handleRefreshArticlesSuccess(category, data)
+                }
+                .onFailure { error ->
+                    handleRefreshArticlesError(error)
+                }
+        }
+    }
+
+    private fun setRefreshingState() {
+        updateViewModelState {
+            copy(
+                statusType = HomeViewModelState.StatusType.STABLE,
+                isRefreshing = true,
+            )
+        }
+    }
+
+    private fun handleRefreshArticlesSuccess(
+        category: NewsCategory,
+        data: List<Article>,
+    ) {
+        updateViewModelState {
+            copy(
+                isRefreshing = false,
+                articlesByCategory = articlesByCategory + (category to data)
+            )
+        }
+    }
+
+    private fun handleRefreshArticlesError(error: Throwable) {
+        Logger.e(TAG, "Failed to refresh articles: ${error.message}", error)
+        updateViewModelState {
+            copy(
+                statusType = HomeViewModelState.StatusType.ERROR,
+                isRefreshing = false,
                 error = error as? NewsflowError
             )
         }

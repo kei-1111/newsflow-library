@@ -12,4 +12,5 @@ sealed interface HomeIntent : Intent {
     data object CopyArticleUrl : HomeIntent
     data object ShareArticle : HomeIntent
     data object RetryLoad : HomeIntent
+    data object Refresh : HomeIntent
 }
