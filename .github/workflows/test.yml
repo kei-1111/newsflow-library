@@ -5,6 +5,10 @@ on:
     branches: [ main ]
   pull_request:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     runs-on: macos-latest
@@ -23,9 +27,103 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Create local.properties
-        run: |
-          echo "NEWS_API_KEY=${{ secrets.NEWS_API_KEY || 'test-api-key' }}" > local.properties
-
       - name: Run all tests
         run: ./gradlew allTests
+
+      - name: Run JVM tests (for Kover coverage)
+        run: ./gradlew jvmTest
+
+      - name: Generate Kover XML Report
+        run: ./gradlew koverXmlReport
+
+      - name: Generate Coverage Report
+        id: coverage
+        run: |
+          # ステータス判定関数
+          get_status() {
+            local percent=$1
+            if awk "BEGIN {exit !($percent >= 90)}"; then
+              echo "✅ Excellent"
+            elif awk "BEGIN {exit !($percent >= 80)}"; then
+              echo "✅ Good"
+            elif awk "BEGIN {exit !($percent >= 60)}"; then
+              echo "⚠️ Fair"
+            else
+              echo "❌ Low"
+            fi
+          }
+
+          get_total_status() {
+            local percent=$1
+            if awk "BEGIN {exit !($percent >= 80)}"; then
+              echo "✅"
+            elif awk "BEGIN {exit !($percent >= 60)}"; then
+              echo "⚠️"
+            else
+              echo "❌"
+            fi
+          }
+
+          # カバレッジレポートを生成
+          REPORT_FILE="coverage_report.md"
+          echo "## 📊 Code Coverage Report" > $REPORT_FILE
+          echo "" >> $REPORT_FILE
+          echo "| Module | Coverage | Status |" >> $REPORT_FILE
+          echo "|--------|----------|--------|" >> $REPORT_FILE
+
+          TOTAL_COVERED=0
+          TOTAL_MISSED=0
+
+          # テストのあるモジュールのみ対象
+          MODULES="core/data core/domain core/network feature/home feature/viewer"
+
+          for MODULE in $MODULES; do
+            REPORT="./$MODULE/build/reports/kover/report.xml"
+            if [ -f "$REPORT" ]; then
+              # XMLからLINEカバレッジを抽出（レポート全体の合計 = 最後の<counter type="LINE">）
+              LINE_DATA=$(grep 'type="LINE"' "$REPORT" | tail -1)
+              COVERED=$(echo "$LINE_DATA" | sed -n 's/.*covered="\([0-9]*\)".*/\1/p')
+              MISSED=$(echo "$LINE_DATA" | sed -n 's/.*missed="\([0-9]*\)".*/\1/p')
+
+              if [ -n "$COVERED" ] && [ -n "$MISSED" ]; then
+                TOTAL=$((COVERED + MISSED))
+                if [ "$TOTAL" -gt 0 ]; then
+                  PERCENT=$(awk "BEGIN {printf \"%.1f\", $COVERED * 100 / $TOTAL}")
+                  STATUS=$(get_status $PERCENT)
+                  echo "| \`$MODULE\` | ${PERCENT}% ($COVERED/$TOTAL) | $STATUS |" >> $REPORT_FILE
+                  TOTAL_COVERED=$((TOTAL_COVERED + COVERED))
+                  TOTAL_MISSED=$((TOTAL_MISSED + MISSED))
+                fi
+              fi
+            fi
+          done
+
+          echo "" >> $REPORT_FILE
+          TOTAL_LINES=$((TOTAL_COVERED + TOTAL_MISSED))
+          if [ "$TOTAL_LINES" -gt 0 ]; then
+            TOTAL_PERCENT=$(awk "BEGIN {printf \"%.1f\", $TOTAL_COVERED * 100 / $TOTAL_LINES}")
+            TOTAL_STATUS=$(get_total_status $TOTAL_PERCENT)
+            echo "**Total: ${TOTAL_PERCENT}%** ($TOTAL_COVERED/$TOTAL_LINES lines) $TOTAL_STATUS" >> $REPORT_FILE
+          fi
+
+          # GitHub Step Summaryにも出力
+          cat $REPORT_FILE >> $GITHUB_STEP_SUMMARY
+
+      - name: Add Coverage Comment to PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 既存のカバレッジコメントを検索
+          COMMENT_ID=$(gh api repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments \
+            --jq '.[] | select(.body | startswith("## 📊 Code Coverage Report")) | .id' | head -1)
+
+          if [ -n "$COMMENT_ID" ]; then
+            # 既存のコメントを更新
+            gh api repos/${{ github.repository }}/issues/comments/$COMMENT_ID \
+              -X PATCH \
+              -F body=@coverage_report.md
+          else
+            # 新しいコメントを追加
+            gh pr comment ${{ github.event.pull_request.number }} --body-file coverage_report.md
+          fi

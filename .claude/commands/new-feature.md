@@ -19,9 +19,9 @@ feature/{name}/
     ├── commonMain/kotlin/io/github/kei_1111/newsflow/library/feature/{name}/
     │   ├── {Name}ViewModel.kt
     │   ├── {Name}ViewModelState.kt
-    │   ├── {Name}UiState.kt
-    │   ├── {Name}UiAction.kt
-    │   ├── {Name}UiEffect.kt
+    │   ├── {Name}State.kt
+    │   ├── {Name}Intent.kt
+    │   ├── {Name}Effect.kt
     │   └── di/
     │       └── {Name}Module.kt
     └── commonTest/kotlin/io/github/kei_1111/newsflow/library/feature/{name}/
@@ -43,21 +43,21 @@ kotlin {
 }
 ```
 
-#### {Name}UiState.kt
+#### {Name}State.kt
 ```kotlin
 package io.github.kei_1111.newsflow.library.feature.{name}
 
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
-import io.github.kei_1111.newsflow.library.core.mvi.stateful.UiState
+import io.github.kei_1111.newsflow.library.core.mvi.stateful.State
 
-sealed interface {Name}UiState : UiState {
+sealed interface {Name}State : State {
     data class Stable(
         val isLoading: Boolean = false,
-    ) : {Name}UiState
+    ) : {Name}State
 
     data class Error(
         val error: NewsflowError,
-    ) : {Name}UiState
+    ) : {Name}State
 }
 ```
 
@@ -72,39 +72,39 @@ data class {Name}ViewModelState(
     val statusType: StatusType = StatusType.STABLE,
     val isLoading: Boolean = false,
     val error: NewsflowError? = null,
-) : ViewModelState<{Name}UiState> {
+) : ViewModelState<{Name}State> {
     enum class StatusType { STABLE, ERROR }
 
-    override fun toState(): {Name}UiState = when (statusType) {
-        StatusType.STABLE -> {Name}UiState.Stable(
+    override fun toState(): {Name}State = when (statusType) {
+        StatusType.STABLE -> {Name}State.Stable(
             isLoading = isLoading,
         )
-        StatusType.ERROR -> {Name}UiState.Error(
+        StatusType.ERROR -> {Name}State.Error(
             error = requireNotNull(error) { "Error must not be null when statusType is ERROR" }
         )
     }
 }
 ```
 
-#### {Name}UiAction.kt
+#### {Name}Intent.kt
 ```kotlin
 package io.github.kei_1111.newsflow.library.feature.{name}
 
-import io.github.kei_1111.newsflow.library.core.mvi.UiAction
+import io.github.kei_1111.newsflow.library.core.mvi.Intent
 
-sealed interface {Name}UiAction : UiAction {
-    // TODO: Add UI actions
+sealed interface {Name}Intent : Intent {
+    // TODO: Add intents
 }
 ```
 
-#### {Name}UiEffect.kt
+#### {Name}Effect.kt
 ```kotlin
 package io.github.kei_1111.newsflow.library.feature.{name}
 
-import io.github.kei_1111.newsflow.library.core.mvi.UiEffect
+import io.github.kei_1111.newsflow.library.core.mvi.Effect
 
-sealed interface {Name}UiEffect : UiEffect {
-    data object NavigateBack : {Name}UiEffect
+sealed interface {Name}Effect : Effect {
+    data object NavigateBack : {Name}Effect
 }
 ```
 
@@ -114,14 +114,14 @@ package io.github.kei_1111.newsflow.library.feature.{name}
 
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
 
-class {Name}ViewModel : StatefulBaseViewModel<{Name}ViewModelState, {Name}UiState, {Name}UiAction, {Name}UiEffect>() {
+class {Name}ViewModel : StatefulBaseViewModel<{Name}ViewModelState, {Name}State, {Name}Intent, {Name}Effect>() {
 
     override fun createInitialViewModelState(): {Name}ViewModelState = {Name}ViewModelState()
-    override fun createInitialUiState(): {Name}UiState = {Name}UiState.Stable()
+    override fun createInitialState(): {Name}State = {Name}State.Stable()
 
-    override fun onUiAction(uiAction: {Name}UiAction) {
-        when (uiAction) {
-            // TODO: Handle UI actions
+    override fun onIntent(intent: {Name}Intent) {
+        when (intent) {
+            // TODO: Handle intents
         }
     }
 
@@ -179,9 +179,9 @@ class {Name}ViewModelTest {
     fun `initial state is Stable`() = runTest {
         val viewModel = {Name}ViewModel()
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             val initialState = awaitItem()
-            assertIs<{Name}UiState.Stable>(initialState)
+            assertIs<{Name}State.Stable>(initialState)
         }
     }
 }

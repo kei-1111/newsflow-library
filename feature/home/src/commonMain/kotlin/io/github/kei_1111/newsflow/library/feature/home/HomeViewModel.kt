@@ -12,49 +12,46 @@ import kotlin.time.TimeSource
 
 class HomeViewModel(
     private val fetchTopHeadlineArticlesUseCase: FetchTopHeadlineArticlesUseCase
-) : StatefulBaseViewModel<HomeViewModelState, HomeUiState, HomeUiAction, HomeUiEffect>() {
+) : StatefulBaseViewModel<HomeViewModelState, HomeState, HomeIntent, HomeEffect>() {
 
     override fun createInitialViewModelState(): HomeViewModelState = HomeViewModelState()
-    override fun createInitialUiState(): HomeUiState = HomeUiState.Stable()
+    override fun createInitialState(): HomeState = HomeState.Stable()
 
     init {
         fetchArticles(_viewModelState.value.currentNewsCategory)
     }
 
-    override fun onUiAction(uiAction: HomeUiAction) {
-        when (uiAction) {
-            is HomeUiAction.OnClickArticleCard -> {
-                sendUiEffect(HomeUiEffect.NavigateViewer(uiAction.article.id))
+    override fun onIntent(intent: HomeIntent) {
+        when (intent) {
+            is HomeIntent.NavigateViewer -> {
+                sendEffect(HomeEffect.NavigateViewer(intent.article.id))
             }
-            is HomeUiAction.OnSwipNewsCategoryPage -> {
-                changeNewsCategory(uiAction.newsCategory)
+            is HomeIntent.ChangeCategory -> {
+                changeNewsCategory(intent.newsCategory)
             }
-            is HomeUiAction.OnClickNewsCategoryTag -> {
-                changeNewsCategory(uiAction.newsCategory)
+            is HomeIntent.ShowArticleOverview -> {
+                updateViewModelState { copy(selectedArticle = intent.article) }
             }
-            is HomeUiAction.OnClickMoreBottom -> {
-                updateViewModelState { copy(selectedArticle = uiAction.article) }
-            }
-            is HomeUiAction.OnDismissArticleOverviewBottomSheet -> {
+            is HomeIntent.DismissArticleOverview -> {
                 updateViewModelState { copy(selectedArticle = null) }
             }
-            is HomeUiAction.OnClickCopyUrlButton -> {
+            is HomeIntent.CopyArticleUrl -> {
                 _viewModelState.value.selectedArticle?.let {
-                    sendUiEffect(HomeUiEffect.CopyUrl(it.url))
+                    sendEffect(HomeEffect.CopyUrl(it.url))
                 }
             }
-            is HomeUiAction.OnClickShareButton -> {
+            is HomeIntent.ShareArticle -> {
                 val article = _viewModelState.value.selectedArticle
                 article?.let {
-                    sendUiEffect(
-                        HomeUiEffect.ShareArticle(
+                    sendEffect(
+                        HomeEffect.ShareArticle(
                             title = article.title,
                             url = article.url,
                         )
                     )
                 }
             }
-            is HomeUiAction.OnClickRetryButton -> {
+            is HomeIntent.RetryLoad -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
         }

@@ -1,16 +1,21 @@
 package io.github.kei_1111.newsflow.library.feature.viewer
 
 import app.cash.turbine.test
+import dev.mokkery.answering.returns
+import dev.mokkery.everySuspend
+import dev.mokkery.matcher.any
+import dev.mokkery.mock
+import dev.mokkery.verify.VerifyMode.Companion.exactly
+import dev.mokkery.verifySuspend
+import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
+import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
-import io.github.kei_1111.newsflow.library.core.test.model.createTestArticle
-import io.github.kei_1111.newsflow.library.core.test.usecase.FakeGetArticleByIdUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import platform.GameplayKit.GKState.Companion.state
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -21,12 +26,10 @@ import kotlin.test.assertIs
 class ViewerViewModelTest {
 
     private val testDispatcher = StandardTestDispatcher()
-    private lateinit var getArticleByIdUseCase: FakeGetArticleByIdUseCase
 
     @BeforeTest
     fun setup() {
         Dispatchers.setMain(testDispatcher)
-        getArticleByIdUseCase = FakeGetArticleByIdUseCase()
     }
 
     @AfterTest
@@ -36,107 +39,113 @@ class ViewerViewModelTest {
 
     @Test
     fun `initialization fetches article successfully`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(1) // LoadingはスキップされてしまうためskipItem(1)
 
             val state = awaitItem()
-            assertIs<ViewerUiState.Stable>(state)
+            assertIs<ViewerState.Stable>(state)
             assertEquals(article, state.viewingArticle)
         }
     }
 
     @Test
     fun `initialization fails to get article and transitions to error state`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val error = NewsflowError.InternalError.ArticleNotFound("Article Not Found")
-        getArticleByIdUseCase.setResult(Result.failure(error))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.failure(error)
         val viewModel = ViewerViewModel(
             articleId = "valid-id",
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(1) // LoadingはスキップされてしまうためskipItem(1)
 
             val state = awaitItem()
-            assertIs<ViewerUiState.Error>(state)
+            assertIs<ViewerState.Error>(state)
             assertEquals(error, state.error)
         }
     }
 
     @Test
     fun `initialization with blank articleId transitions to error state immediately`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "",
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
-            skipItems(1) // StatefulBaseViewModel.uiState.stateIn
+        viewModel.state.test {
+            skipItems(1) // StatefulBaseViewModel.state.stateIn
 
             val errorState = awaitItem()
-            assertIs<ViewerUiState.Error>(errorState)
+            assertIs<ViewerState.Error>(errorState)
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
-        assertEquals(0, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(0)) { getArticleByIdUseCase(any()) }
     }
 
     @Test
     fun `initialization with whitespace only articleId transitions to error state immediately`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "   ",
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
-            skipItems(1) // StatefulBaseViewModel.uiState.stateIn
+        viewModel.state.test {
+            skipItems(1) // StatefulBaseViewModel.state.stateIn
 
             val errorState = awaitItem()
-            assertIs<ViewerUiState.Error>(errorState)
+            assertIs<ViewerState.Error>(errorState)
             assertIs<NewsflowError.InternalError.InvalidParameter>(errorState.error)
         }
 
-        assertEquals(0, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(0)) { getArticleByIdUseCase(any()) }
     }
 
     @Test
-    fun `onClickBackButton emits NavigateBack effect`() = runTest {
+    fun `NavigateBack intent emits NavigateBack effect`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiEffect.test {
-            viewModel.onUiAction(ViewerUiAction.OnClickBackButton)
+        viewModel.effect.test {
+            viewModel.onIntent(ViewerIntent.NavigateBack)
 
             val effect = awaitItem()
-            assertIs<ViewerUiEffect.NavigateBack>(effect)
+            assertIs<ViewerEffect.NavigateBack>(effect)
         }
     }
 
     @Test
-    fun `onClickShareButton emits ShareArticle effect with correct title and url`() = runTest {
+    fun `ShareArticle intent emits ShareArticle effect with correct title and url`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiEffect.test {
-            viewModel.onUiAction(ViewerUiAction.OnClickShareButton(article))
+        viewModel.effect.test {
+            viewModel.onIntent(ViewerIntent.ShareArticle(article))
 
             val effect = awaitItem()
-            assertIs<ViewerUiEffect.ShareArticle>(effect)
+            assertIs<ViewerEffect.ShareArticle>(effect)
             assertEquals(article.title, effect.title)
             assertEquals(article.url, effect.url)
         }
@@ -144,19 +153,88 @@ class ViewerViewModelTest {
 
     @Test
     fun `article fetch passes correct articleId to use case`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val articleId = "test-article-123"
         val article = createTestArticle(1)
-        getArticleByIdUseCase.setResult(Result.success(article))
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val viewModel = ViewerViewModel(
             articleId = articleId,
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
-        viewModel.uiState.test {
+        viewModel.state.test {
             skipItems(2) // init{}が終わるまでスキップ
         }
 
-        assertEquals(articleId, getArticleByIdUseCase.lastInvokedId)
-        assertEquals(1, getArticleByIdUseCase.invocationCount)
+        verifySuspend(exactly(1)) { getArticleByIdUseCase(articleId) }
     }
+
+    @Test
+    fun `StartWebViewLoading intent sets isWebViewLoading to true`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // 初期状態をスキップ
+
+            // 初期状態はisWebViewLoading = true
+            val initialState = awaitItem()
+            assertIs<ViewerState.Stable>(initialState)
+            assertEquals(true, initialState.isWebViewLoading)
+
+            // FinishWebViewLoadingでfalseにしてからStartWebViewLoadingをテスト
+            viewModel.onIntent(ViewerIntent.FinishWebViewLoading)
+            val finishedState = awaitItem()
+            assertIs<ViewerState.Stable>(finishedState)
+            assertEquals(false, finishedState.isWebViewLoading)
+
+            // StartWebViewLoadingでtrueに戻る
+            viewModel.onIntent(ViewerIntent.StartWebViewLoading)
+            val startedState = awaitItem()
+            assertIs<ViewerState.Stable>(startedState)
+            assertEquals(true, startedState.isWebViewLoading)
+        }
+    }
+
+    @Test
+    fun `FinishWebViewLoading intent sets isWebViewLoading to false`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // 初期状態をスキップ
+
+            // 初期状態はisWebViewLoading = true
+            val initialState = awaitItem()
+            assertIs<ViewerState.Stable>(initialState)
+            assertEquals(true, initialState.isWebViewLoading)
+
+            // FinishWebViewLoadingでfalseに変更
+            viewModel.onIntent(ViewerIntent.FinishWebViewLoading)
+            val finishedState = awaitItem()
+            assertIs<ViewerState.Stable>(finishedState)
+            assertEquals(false, finishedState.isWebViewLoading)
+        }
+    }
+
+    private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
+        id = "$index",
+        source = "$prefix Source $index",
+        author = "$prefix Author $index",
+        title = "$prefix Title $index",
+        description = "$prefix Description $index",
+        url = "https://example.com/$prefix-$index",
+        imageUrl = "https://example.com/image-$index.jpg",
+        publishedAt = 1234567890000L + index,
+    )
 }

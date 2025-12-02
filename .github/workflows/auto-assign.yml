@@ -1,0 +1,28 @@
+name: Auto Assign
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Assign issue to opener
+        if: github.event_name == 'issues'
+        run: |
+          gh issue edit ${{ github.event.issue.number }} \
+            --repo ${{ github.repository }} \
+            --add-assignee ${{ github.event.issue.user.login }}
+
+      - name: Assign PR to opener
+        if: github.event_name == 'pull_request'
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --add-assignee ${{ github.event.pull_request.user.login }}

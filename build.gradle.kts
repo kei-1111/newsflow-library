@@ -4,9 +4,12 @@ plugins {
     alias(libs.plugins.android.kmp.library) apply false
     alias(libs.plugins.detekt) apply false
     alias(libs.plugins.kmp) apply false
+    alias(libs.plugins.kover) apply false
+    alias(libs.plugins.mokkery) apply false
 
     // Convention Plugins
     alias(libs.plugins.newsflow.library.detekt) apply false
     alias(libs.plugins.newsflow.library.kmp.feature) apply false
     alias(libs.plugins.newsflow.library.kmp.library) apply false
+    alias(libs.plugins.newsflow.library.kover) apply false
 }

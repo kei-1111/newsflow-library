@@ -11,6 +11,7 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply(libs.plugin("newsflow.library.kmp.library").pluginId)
+                apply(libs.plugin("mokkery").pluginId)
             }
 
             extensions.configure<KotlinMultiplatformExtension> {
@@ -25,7 +26,6 @@ class KmpFeatureConventionPlugin : Plugin<Project> {
                         implementation(libs.library("koin.compose.viewmodel"))
                     }
                     commonTest.dependencies {
-                        implementation(project(":core:test"))
                         implementation(libs.library("koin.test"))
                         implementation(libs.library("kotlin.test"))
                         implementation(libs.library("kotlinx.coroutines.test"))

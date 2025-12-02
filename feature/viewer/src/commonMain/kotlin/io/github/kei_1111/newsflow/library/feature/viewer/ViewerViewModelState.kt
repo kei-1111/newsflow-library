@@ -6,21 +6,23 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
 
 data class ViewerViewModelState(
     val statusType: StatusType = StatusType.INIT,
+    val isWebViewLoading: Boolean = true,
     val viewingArticle: Article? = null,
     val error: NewsflowError? = null,
-) : ViewModelState<ViewerUiState> {
+) : ViewModelState<ViewerState> {
     enum class StatusType { INIT, LOADING, STABLE, ERROR }
 
-    override fun toState(): ViewerUiState = when (statusType) {
-        StatusType.INIT -> ViewerUiState.Init
+    override fun toState(): ViewerState = when (statusType) {
+        StatusType.INIT -> ViewerState.Init
 
-        StatusType.LOADING -> ViewerUiState.Loading
+        StatusType.LOADING -> ViewerState.Loading
 
-        StatusType.STABLE -> ViewerUiState.Stable(
+        StatusType.STABLE -> ViewerState.Stable(
+            isWebViewLoading = isWebViewLoading,
             viewingArticle = requireNotNull(viewingArticle) { "Article must not be null when statusType is STABLE" }
         )
 
-        StatusType.ERROR -> ViewerUiState.Error(
+        StatusType.ERROR -> ViewerState.Error(
             error = requireNotNull(error) { "Error must not be null when statusType is ERROR" }
         )
     }

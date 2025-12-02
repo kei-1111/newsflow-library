@@ -22,6 +22,8 @@ newsflow-libraryは、Android・iOS向けのKotlin Multiplatform (KMP)ニュー�
 | `./gradlew detekt` | 静的解析（コード品質チェック） |
 | `./gradlew clean build` | クリーン＆ビルド |
 | `./gradlew assemble` | 全XCFrameworkビルド |
+| `./gradlew koverHtmlReport` | カバレッジレポート生成（HTML） |
+| `./gradlew koverXmlReport` | カバレッジレポート生成（XML） |
 
 ### 重要ファイル
 
@@ -46,7 +48,7 @@ createTestArticles(n)
 updateViewModelState { copy(...) }
 
 // 一度きりのイベント送信
-sendUiEffect(MyUiEffect.Navigate(...))
+sendEffect(MyEffect.Navigate(...))
 
 // 最小ローディング時間保証
 ensureMinimumLoadingTime()
@@ -65,7 +67,7 @@ ensureMinimumLoadingTime()
 
 - ❌ フィーチャーからcore:dataやcore:networkを直接参照 → ✅ core:domain経由のみ
 - ❌ ViewModelでリポジトリを直接使用 → ✅ UseCaseを経由
-- ❌ UIStateをミュータブルにする → ✅ ViewModelStateでミュータブル管理、UiStateはイミュータブル
+- ❌ Stateをミュータブルにする → ✅ ViewModelStateでミュータブル管理、Stateはイミュータブル
 - ❌ Dispatcherをハードコード → ✅ コンストラクタ注入で設定
 
 ## 開発環境セットアップ
@@ -75,13 +77,6 @@ ensureMinimumLoadingTime()
 - JDK 21
 - Android Studio with KMP plugin
 - Xcode（iOS開発時）
-
-### API Key設定
-
-`local.properties`に追加：
-```properties
-NEWS_API_KEY=your_api_key_here
-```
 
 ### 初回セットアップ
 
@@ -109,9 +104,9 @@ interface FetchArticlesUseCase {
     suspend operator fun invoke(category: String, forceRefresh: Boolean = false): Result<List<Article>>
 }
 
-// ✅ Good: ViewModelStateからUiStateを導出
-data class HomeViewModelState(...) : ViewModelState<HomeUiState> {
-    override fun toState(): HomeUiState = when { ... }
+// ✅ Good: ViewModelStateからStateを導出
+data class HomeViewModelState(...) : ViewModelState<HomeState> {
+    override fun toState(): HomeState = when { ... }
 }
 
 // ✅ Good: Result型でエラーをラップ
@@ -194,9 +189,9 @@ features（プレゼンテーション層＋MVI）
 ```
 feature/xxx/src/commonMain/kotlin/.../
 ├── XxxViewModel.kt       # ViewModel実装
-├── XxxUiState.kt        # UI公開用ステート（sealed interface）
-├── XxxUiAction.kt       # ユーザーアクション
-├── XxxUiEffect.kt       # 一度きりの副作用
+├── XxxState.kt          # UI公開用ステート（sealed interface）
+├── XxxIntent.kt         # ユーザーの意図
+├── XxxEffect.kt         # 一度きりの副作用
 ├── XxxViewModelState.kt # 内部ステート（data class）
 └── XxxModule.kt         # Koinモジュール
 ```
@@ -209,22 +204,22 @@ data class XxxViewModelState(
     val isLoading: Boolean = false,
     val data: List<Item> = emptyList(),
     val error: NewsflowError? = null,
-) : ViewModelState<XxxUiState> {
-    override fun toState(): XxxUiState = when {
-        error != null -> XxxUiState.Error(error)
-        else -> XxxUiState.Stable(isLoading, data)
+) : ViewModelState<XxxState> {
+    override fun toState(): XxxState = when {
+        error != null -> XxxState.Error(error)
+        else -> XxxState.Stable(isLoading, data)
     }
 }
 
 // ViewModel実装
 class XxxViewModel(
     private val useCase: XxxUseCase,
-) : StatefulBaseViewModel<XxxViewModelState, XxxUiState, XxxUiAction, XxxUiEffect>(
+) : StatefulBaseViewModel<XxxViewModelState, XxxState, XxxIntent, XxxEffect>(
     initialViewModelState = XxxViewModelState(),
 ) {
-    override fun handleAction(action: XxxUiAction) {
-        when (action) {
-            is XxxUiAction.Load -> loadData()
+    override fun onIntent(intent: XxxIntent) {
+        when (intent) {
+            is XxxIntent.Load -> loadData()
         }
     }
 
@@ -292,8 +287,8 @@ class XxxViewModelTest {
     fun `success case`() = runTest {
         fakeUseCase.setResult(Result.success(testData))
 
-        viewModel.uiState.test {
-            viewModel.handleAction(XxxUiAction.Load)
+        viewModel.state.test {
+            viewModel.onIntent(XxxIntent.Load)
             // アサーション
         }
     }
@@ -314,6 +309,7 @@ class XxxViewModelTest {
 | `newsflow.library.kmp.library` | KMPライブラリ基本設定 | coreモジュール, shared |
 | `newsflow.library.kmp.feature` | フィーチャーモジュール設定 | feature/* |
 | `newsflow.library.detekt` | 静的解析設定 | 全モジュール |
+| `newsflow.library.kover` | テストカバレッジ設定 | 全モジュール（自動適用） |
 | `newsflow.library.maven.publish` | Maven公開設定 | 公開対象モジュール |
 
 **新規モジュール作成時**:
@@ -360,6 +356,7 @@ useCase().fold(
 | Koin | 4.1.1 |
 | Ktor | 3.3.2 |
 | Coroutines | 1.10.2 |
+| Kover | 0.9.3 |
 | Turbine | 1.2.1 |
 | AndroidX Lifecycle | 2.9.1 |
 | Target SDK | 36 |

@@ -17,6 +17,7 @@ dependencies {
     compileOnly(libs.android.gradle)
     compileOnly(libs.detekt.gradle)
     compileOnly(libs.kotlin.gradle)
+    compileOnly(libs.kover.gradle)
 }
 
 gradlePlugin {
@@ -32,6 +33,10 @@ gradlePlugin {
         register("kmpFeature") {
             id = libs.plugins.newsflow.library.kmp.feature.get().pluginId
             implementationClass = "KmpFeatureConventionPlugin"
+        }
+        register("kover") {
+            id = libs.plugins.newsflow.library.kover.get().pluginId
+            implementationClass = "KoverConventionPlugin"
         }
         register("mavenPublish") {
             id = libs.plugins.newsflow.library.maven.publish.get().pluginId

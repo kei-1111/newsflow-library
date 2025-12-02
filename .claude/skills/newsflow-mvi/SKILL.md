@@ -1,6 +1,6 @@
 ---
 name: newsflow-mvi
-description: newsflow-libraryのMVIパターン実装規約を適用します。ViewModel、UiState、UiAction、UiEffect、ViewModelStateファイルの作成・編集時に使用してください。
+description: newsflow-libraryのMVIパターン実装規約を適用します。ViewModel、State、Intent、Effect、ViewModelStateファイルの作成・編集時に使用してください。
 ---
 
 # Newsflow MVI Rules
@@ -11,41 +11,41 @@ description: newsflow-libraryのMVIパターン実装規約を適用します。
 feature/{name}/src/commonMain/.../feature/{name}/
 ├── {Name}ViewModel.kt
 ├── {Name}ViewModelState.kt
-├── {Name}UiState.kt
-├── {Name}UiAction.kt
-├── {Name}UiEffect.kt
+├── {Name}State.kt
+├── {Name}Intent.kt
+├── {Name}Effect.kt
 └── di/{Name}Module.kt
 ```
 
 ## データフロー
 
 ```
-UI → UiAction → ViewModel.onUiAction() → updateViewModelState { copy(...) }
+UI → Intent → ViewModel.onIntent() → updateViewModelState { copy(...) }
                                                     ↓
                                             ViewModelState.toState()
                                                     ↓
-                                                 UiState → UI
+                                                 State → UI
 
-ViewModel → sendUiEffect() → UiEffect → UI（一度きりの処理）
+ViewModel → sendEffect() → Effect → UI（一度きりの処理）
 ```
 
 ## 実装チェックリスト
 
-### UiState作成時
-- [ ] `sealed interface {Name}UiState : UiState` で定義
+### State作成時
+- [ ] `sealed interface {Name}State : State` で定義
 - [ ] `Stable` と `Error` の2状態を最低限用意
 - [ ] Errorは `error: NewsflowError` を持つ
 
 ### ViewModelState作成時
-- [ ] `data class` + `ViewModelState<{Name}UiState>` 実装
+- [ ] `data class` + `ViewModelState<{Name}State>` 実装
 - [ ] `StatusType` enumで状態管理（STABLE, ERROR）
-- [ ] `toState()` で UiState への変換ロジックを集約
+- [ ] `toState()` で State への変換ロジックを集約
 - [ ] ERROR時は `requireNotNull(error)` で非null保証
 
 ### ViewModel作成時
-- [ ] `StatefulBaseViewModel<VS, S, A, E>` 継承
-- [ ] `createInitialViewModelState()` と `createInitialUiState()` 実装
-- [ ] 全UiActionを `onUiAction()` のwhenで処理
+- [ ] `StatefulBaseViewModel<VS, S, I, E>` 継承
+- [ ] `createInitialViewModelState()` と `createInitialState()` 実装
+- [ ] 全Intentを `onIntent()` のwhenで処理
 - [ ] 非同期処理は `viewModelScope.launch` + `ensureMinimumLoadingTime()`
 - [ ] エラーは `Logger.e()` でログ出力
 
@@ -56,7 +56,7 @@ ViewModel → sendUiEffect() → UiEffect → UI（一度きりの処理）
 updateViewModelState { copy(isLoading = true) }
 
 // 一度きりのイベント（ナビゲーション等）
-sendUiEffect({Name}UiEffect.NavigateToDetail(id))
+sendEffect({Name}Effect.NavigateToDetail(id))
 
 // 最小ローディング時間（500msデフォルト）
 val startMark = TimeSource.Monotonic.markNow()
@@ -66,6 +66,6 @@ ensureMinimumLoadingTime(startMark)
 
 ## 禁止パターン
 
-- UiStateにナビゲーションフラグを持たせない（UiEffect使用）
+- Stateにナビゲーションフラグを持たせない（Effect使用）
 - _viewModelState.value を直接変更しない（updateViewModelState使用）
 - ViewModelでRepository直接使用しない（UseCase経由）

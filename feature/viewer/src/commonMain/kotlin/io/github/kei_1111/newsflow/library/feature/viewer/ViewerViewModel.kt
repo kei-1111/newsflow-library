@@ -11,27 +11,33 @@ import kotlinx.coroutines.launch
 class ViewerViewModel(
     private val articleId: String,
     private val getArticleByIdUseCase: GetArticleByIdUseCase,
-) : StatefulBaseViewModel<ViewerViewModelState, ViewerUiState, ViewerUiAction, ViewerUiEffect>() {
+) : StatefulBaseViewModel<ViewerViewModelState, ViewerState, ViewerIntent, ViewerEffect>() {
 
     override fun createInitialViewModelState(): ViewerViewModelState = ViewerViewModelState()
-    override fun createInitialUiState(): ViewerUiState = ViewerUiState.Init
+    override fun createInitialState(): ViewerState = ViewerState.Init
 
     init {
         getArticle()
     }
 
-    override fun onUiAction(uiAction: ViewerUiAction) {
-        when (uiAction) {
-            ViewerUiAction.OnClickBackButton -> {
-                sendUiEffect(ViewerUiEffect.NavigateBack)
+    override fun onIntent(intent: ViewerIntent) {
+        when (intent) {
+            ViewerIntent.NavigateBack -> {
+                sendEffect(ViewerEffect.NavigateBack)
             }
-            is ViewerUiAction.OnClickShareButton -> {
-                sendUiEffect(
-                    ViewerUiEffect.ShareArticle(
-                        title = uiAction.article.title,
-                        url = uiAction.article.url,
+            is ViewerIntent.ShareArticle -> {
+                sendEffect(
+                    ViewerEffect.ShareArticle(
+                        title = intent.article.title,
+                        url = intent.article.url,
                     )
                 )
+            }
+            is ViewerIntent.StartWebViewLoading -> {
+                updateViewModelState { copy(isWebViewLoading = true) }
+            }
+            is ViewerIntent.FinishWebViewLoading -> {
+                updateViewModelState { copy(isWebViewLoading = false) }
             }
         }
     }
