@@ -112,7 +112,7 @@ data class HomeViewModelState(
 
 ### Intent
 
-UIからViewModelへの通知。「何が起きたか」または「何が起きてほしいか」を伝える。
+UIからViewModelへの通知。「ViewModelにしてほしいこと」を伝える。
 ViewModelはこれを受け取り、状態の更新やEffectの発行を判断する。ユーザー操作だけでなく、システムイベント（WebViewロード完了等）も含む。
 
 ```kotlin
@@ -143,6 +143,51 @@ Intentを「ユーザー操作によるAction」ではなく「UIからの通知
 - 異なる操作（スワイプとタブタップ）で同じ処理を行う場合、重複を避けられる
 - 「SwipeDown」「ClickOutside」のような操作ベースの命名は直感的でない
   → 「DismissBottomSheet」「DismissDialog」のような意図ベースの命名が明確
+
+#### ❌ バッドケース：操作ベースの命名
+
+以下のような「何をクリックしたか」「どの操作を行ったか」に基づく命名は**避ける**。
+
+```kotlin
+// ❌ Bad: 操作ベースの命名
+sealed interface HomeIntent : Intent {
+    data class OnClickArticleCard(val article: Article) : HomeIntent
+    data class OnSwipeCategory(val category: NewsCategory) : HomeIntent
+    data class OnClickCategoryTab(val category: NewsCategory) : HomeIntent
+    data object OnClickRetryButton : HomeIntent
+    data object OnClickShareButton : HomeIntent
+    data object OnLongPressArticle : HomeIntent
+    data object OnSwipeDownToRefresh : HomeIntent
+}
+```
+
+**問題点**:
+
+- **重複の発生**: `OnSwipeCategory`と`OnClickCategoryTab`が同じ処理を行う場合、2つのIntentを処理する必要がある
+- **意図が不明確**: `OnLongPressArticle`が何をしたいのか（プレビュー表示？削除？共有？）が名前から分からない
+- **UI実装への依存**: スワイプをタップに変更した場合、Intent名も変更が必要になる
+
+#### ✅ グッドケース：意図ベースの命名
+
+「何をしたいか」に基づく命名を使用します。
+
+```kotlin
+// ✅ Good: 意図ベースの命名
+sealed interface HomeIntent : Intent {
+    data class NavigateViewer(val article: Article) : HomeIntent
+    data class ChangeCategory(val category: NewsCategory) : HomeIntent
+    data object RetryLoad : HomeIntent
+    data object ShareArticle : HomeIntent
+    data class ShowArticleOverview(val article: Article) : HomeIntent
+    data object RefreshArticles : HomeIntent
+}
+```
+
+**利点**:
+
+- **重複なし**: スワイプでもタップでも`ChangeCategory`を発行すればよい
+- **意図が明確**: `ShowArticleOverview`で何がしたいか一目瞭然
+- **UI非依存**: 操作方法が変わってもIntent名を変更する必要がない
 
 ---
 
