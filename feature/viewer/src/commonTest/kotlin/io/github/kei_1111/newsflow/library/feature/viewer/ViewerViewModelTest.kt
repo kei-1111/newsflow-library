@@ -13,6 +13,7 @@ import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -141,8 +142,11 @@ class ViewerViewModelTest {
             getArticleByIdUseCase = getArticleByIdUseCase,
         )
 
+        // 記事の取得が完了するまで待機
+        testDispatcher.scheduler.advanceUntilIdle()
+
         viewModel.effect.test {
-            viewModel.onIntent(ViewerIntent.ShareArticle(article))
+            viewModel.onIntent(ViewerIntent.ShareArticle)
 
             val effect = awaitItem()
             assertIs<ViewerEffect.ShareArticle>(effect)
