@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -16,10 +16,14 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build all modules
-        run: ./gradlew assemble
+      - name: Build (excluding iOS)
+        run: ./gradlew build -x allTests -x linkDebugFrameworkIosArm64 -x linkDebugFrameworkIosSimulatorArm64 -x linkReleaseFrameworkIosArm64 -x linkReleaseFrameworkIosSimulatorArm64

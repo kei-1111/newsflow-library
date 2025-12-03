@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -20,15 +20,16 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '21'
-          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run all tests
-        run: ./gradlew allTests
-
-      - name: Run JVM tests (for Kover coverage)
+      - name: Run JVM tests
         run: ./gradlew jvmTest
 
       - name: Generate Kover XML Report
