@@ -32,7 +32,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Publish Android to GitHub Packages
-        run: ./gradlew publishAndroidPublicationToGitHubPackagesRepository
+        run: ./gradlew publishKotlinMultiplatformPublicationToGitHubPackagesRepository publishAndroidPublicationToGitHubPackagesRepository
         env:
           GITHUB_ACTOR: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
