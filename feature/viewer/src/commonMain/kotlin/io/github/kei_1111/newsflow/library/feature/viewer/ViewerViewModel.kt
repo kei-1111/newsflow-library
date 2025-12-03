@@ -26,12 +26,14 @@ class ViewerViewModel(
                 sendEffect(ViewerEffect.NavigateBack)
             }
             is ViewerIntent.ShareArticle -> {
-                sendEffect(
-                    ViewerEffect.ShareArticle(
-                        title = intent.article.title,
-                        url = intent.article.url,
+                _viewModelState.value.viewingArticle?.let {
+                    sendEffect(
+                        ViewerEffect.ShareArticle(
+                            title = it.title,
+                            url = it.url,
+                        )
                     )
-                )
+                }
             }
             is ViewerIntent.StartWebViewLoading -> {
                 updateViewModelState { copy(isWebViewLoading = true) }

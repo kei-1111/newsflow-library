@@ -38,12 +38,6 @@ Closes #{issue_number}
 
 **Related (newsflow-library)**: {抽出したURL}
 
-## スクリーンショット
-
-Before | After
-:--: | :--:
-<img src="" width="300" /> | <img src="" width="300" /> 
-
 ## チェックリスト
 
 - [ ] ビルド・Detektが成功

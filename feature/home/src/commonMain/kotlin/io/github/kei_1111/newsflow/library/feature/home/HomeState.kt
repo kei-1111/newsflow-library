@@ -8,6 +8,7 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.State
 sealed interface HomeState : State {
     data class Stable(
         val isLoading: Boolean = false,
+        val isRefreshing: Boolean = false,
         val selectedArticle: Article? = null,
         val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
         val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),

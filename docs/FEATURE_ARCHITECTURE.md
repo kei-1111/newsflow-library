@@ -258,17 +258,6 @@ abstract class StatefulBaseViewModel<VS : ViewModelState<S>, S : State, I : Inte
     protected fun sendEffect(effect: E) {
         _effect.trySend(effect)
     }
-
-    // ローディング時間を最小値以上に保つヘルパー
-    protected suspend fun ensureMinimumLoadingTime(
-        startMark: TimeSource.Monotonic.ValueTimeMark,
-        minimumLoadingTime: Duration = 500.milliseconds
-    ) {
-        val elapsed = startMark.elapsedNow()
-        if (elapsed < minimumLoadingTime) {
-            delay(minimumLoadingTime - elapsed)
-        }
-    }
 }
 ```
 
@@ -445,14 +434,12 @@ class HomeViewModel(
     private fun fetchArticles(category: NewsCategory) {
         setLoadingState()
         viewModelScope.launch {
-            val startMark = TimeSource.Monotonic.markNow()
-
             fetchTopHeadlineArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
-                    handleFetchTopHeadlineArticlesSuccess(category, data, startMark)
+                    handleFetchTopHeadlineArticlesSuccess(category, data)
                 }
                 .onFailure { error ->
-                    handleFetchTopHeadlineArticlesError(error, startMark)
+                    handleFetchTopHeadlineArticlesError(error)
                 }
         }
     }
@@ -469,9 +456,7 @@ class HomeViewModel(
     private suspend fun handleFetchTopHeadlineArticlesSuccess(
         category: NewsCategory,
         data: List<Article>,
-        startMark: TimeSource.Monotonic.ValueTimeMark
     ) {
-        ensureMinimumLoadingTime(startMark)
         updateViewModelState {
             copy(
                 isLoading = false,
@@ -480,12 +465,8 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchTopHeadlineArticlesError(
-        error: Throwable,
-        startMark: TimeSource.Monotonic.ValueTimeMark
-    ) {
+    private suspend fun handleFetchTopHeadlineArticlesError(error: Throwable) {
         Logger.e("HomeViewModel", "Failed to fetch articles: ${error.message}", error)
-        ensureMinimumLoadingTime(startMark)
         updateViewModelState {
             copy(
                 statusType = HomeViewModelState.StatusType.ERROR,
@@ -501,8 +482,7 @@ class HomeViewModel(
 
 1. **onIntent()での一元管理**: 全ての通知を一箇所で処理
 2. **カテゴリ別キャッシング**: `articlesByCategory`で取得済みデータを保持
-3. **最小ローディング時間**: `ensureMinimumLoadingTime()`でUX向上
-4. **エラーハンドリング**: 型安全な`NewsflowError`での処理
+3. **エラーハンドリング**: 型安全な`NewsflowError`での処理
 
 ### Koin DI設定
 
@@ -627,7 +607,6 @@ val homeModule = module {
 
 ### 非同期処理
 - `viewModelScope.launch`で起動
-- `ensureMinimumLoadingTime()`でUX向上
 - エラーハンドリングを忘れずに
 
 ### キャッシング

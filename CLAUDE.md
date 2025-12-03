@@ -49,9 +49,6 @@ updateViewModelState { copy(...) }
 
 // 一度きりのイベント送信
 sendEffect(MyEffect.Navigate(...))
-
-// 最小ローディング時間保証
-ensureMinimumLoadingTime()
 ```
 
 ## ⚠️ 警告・注意事項

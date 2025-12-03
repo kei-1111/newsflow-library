@@ -344,10 +344,64 @@ class HomeViewModelTest {
         }
     }
 
+    @Test
+    fun `Refresh intent sets isRefreshing and fetches articles with forceRefresh successfully`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        val initialArticles = createTestArticles(3, "Initial")
+        val refreshedArticles = createTestArticles(3, "Refreshed")
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.state.test {
+            skipInitialization()
+
+            everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(refreshedArticles)
+            viewModel.onIntent(HomeIntent.Refresh)
+
+            val refreshingState = awaitItem()
+            assertIs<HomeState.Stable>(refreshingState)
+            assertTrue(refreshingState.isRefreshing)
+
+            val successState = awaitItem()
+            assertIs<HomeState.Stable>(successState)
+            assertFalse(successState.isRefreshing)
+            assertEquals(refreshedArticles, successState.articlesByCategory[NewsCategory.GENERAL])
+        }
+    }
+
+    @Test
+    fun `Refresh intent fails and sets error state`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        val initialArticles = createTestArticles(3, "Initial")
+        val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
+        // 初期化は成功させる
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
+        val viewModel = HomeViewModel(fetchArticlesUseCase)
+
+        viewModel.state.test {
+            skipInitialization()
+
+            // リフレッシュ時にエラーを返すように設定
+            everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
+            viewModel.onIntent(HomeIntent.Refresh)
+
+            val refreshingState = awaitItem()
+            assertIs<HomeState.Stable>(refreshingState)
+            assertTrue(refreshingState.isRefreshing)
+
+            val errorState = awaitItem()
+            assertIs<HomeState.Error>(errorState)
+            assertEquals(error, errorState.error)
+        }
+    }
+
     private suspend fun <T> ReceiveTurbine<T>.skipInitialization() {
-        skipItems(2) // StatefulBaseViewModel.state.stateIn + init->fetch->setLoading
-        testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
-        skipItems(1) // init->fetch->handleXXXX
+        // StatefulBaseViewModel.state.stateIn + init->fetch->setLoading (値が切り替わるのが早く2回値が変わるがskipItem.countは1でいい)
+        skipItems(1)
+        // init->fetch->UseCase
+        testDispatcher.scheduler.advanceUntilIdle()
+        // init->fetch->handleXXXX
+        skipItems(1)
     }
 
     private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
