@@ -46,7 +46,6 @@ ViewModel → sendEffect() → Effect → UI（一度きりの処理）
 - [ ] `StatefulBaseViewModel<VS, S, I, E>` 継承
 - [ ] `createInitialViewModelState()` と `createInitialState()` 実装
 - [ ] 全Intentを `onIntent()` のwhenで処理
-- [ ] 非同期処理は `viewModelScope.launch` + `ensureMinimumLoadingTime()`
 - [ ] エラーは `Logger.e()` でログ出力
 
 ## 重要パターン
@@ -57,11 +56,6 @@ updateViewModelState { copy(isLoading = true) }
 
 // 一度きりのイベント（ナビゲーション等）
 sendEffect({Name}Effect.NavigateToDetail(id))
-
-// 最小ローディング時間（500msデフォルト）
-val startMark = TimeSource.Monotonic.markNow()
-// ... 処理 ...
-ensureMinimumLoadingTime(startMark)
 ```
 
 ## 禁止パターン

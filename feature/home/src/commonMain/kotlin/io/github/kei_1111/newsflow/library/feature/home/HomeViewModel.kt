@@ -8,7 +8,6 @@ import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
 import kotlinx.coroutines.launch
-import kotlin.time.TimeSource
 
 class HomeViewModel(
     private val fetchTopHeadlineArticlesUseCase: FetchTopHeadlineArticlesUseCase
@@ -72,14 +71,12 @@ class HomeViewModel(
     private fun fetchArticles(category: NewsCategory) {
         setLoadingState()
         viewModelScope.launch {
-            val startMark = TimeSource.Monotonic.markNow()
-
             fetchTopHeadlineArticlesUseCase.invoke(category.value)
                 .onSuccess { data ->
-                    handleFetchTopHeadlineArticlesSuccess(category, data, startMark)
+                    handleFetchTopHeadlineArticlesSuccess(category, data)
                 }
                 .onFailure { error ->
-                    handleFetchTopHeadlineArticlesError(error, startMark)
+                    handleFetchTopHeadlineArticlesError(error)
                 }
         }
     }
@@ -93,12 +90,10 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchTopHeadlineArticlesSuccess(
+    private fun handleFetchTopHeadlineArticlesSuccess(
         category: NewsCategory,
         data: List<Article>,
-        startMark: TimeSource.Monotonic.ValueTimeMark
     ) {
-        ensureMinimumLoadingTime(startMark)
         updateViewModelState {
             copy(
                 isLoading = false,
@@ -107,12 +102,8 @@ class HomeViewModel(
         }
     }
 
-    private suspend fun handleFetchTopHeadlineArticlesError(
-        error: Throwable,
-        startMark: TimeSource.Monotonic.ValueTimeMark
-    ) {
+    private fun handleFetchTopHeadlineArticlesError(error: Throwable) {
         Logger.e(TAG, "Failed to fetch articles: ${error.message}", error)
-        ensureMinimumLoadingTime(startMark)
         updateViewModelState {
             copy(
                 statusType = HomeViewModelState.StatusType.ERROR,

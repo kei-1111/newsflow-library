@@ -51,7 +51,6 @@ feature/xxx/src/commonMain/kotlin/.../
 * **Override Factory Methods:** Override `createInitialViewModelState()` and `createInitialState()`.
 * **Internal State Management:** Use `updateViewModelState { copy(...) }` for state updates.
 * **One-time Events:** Use `sendEffect()` for navigation and toast events.
-* **Minimum Loading Time:** Use `ensureMinimumLoadingTime()` for consistent UX.
 
 ```kotlin
 class XxxViewModel(

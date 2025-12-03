@@ -396,9 +396,12 @@ class HomeViewModelTest {
     }
 
     private suspend fun <T> ReceiveTurbine<T>.skipInitialization() {
-        skipItems(2) // StatefulBaseViewModel.state.stateIn + init->fetch->setLoading
-        testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
-        skipItems(1) // init->fetch->handleXXXX
+        // StatefulBaseViewModel.state.stateIn + init->fetch->setLoading (値が切り替わるのが早く2回値が変わるがskipItem.countは1でいい)
+        skipItems(1)
+        // init->fetch->UseCase
+        testDispatcher.scheduler.advanceUntilIdle()
+        // init->fetch->handleXXXX
+        skipItems(1)
     }
 
     private fun createTestArticle(index: Int, prefix: String = "Test") = Article(
