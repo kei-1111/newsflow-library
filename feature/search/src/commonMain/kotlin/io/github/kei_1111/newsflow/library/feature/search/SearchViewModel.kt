@@ -75,6 +75,9 @@ class SearchViewModel(
                     )
                 }
             }
+            is SearchIntent.NavigateBack -> {
+                sendEffect(SearchEffect.NavigateBack)
+            }
         }
     }
 

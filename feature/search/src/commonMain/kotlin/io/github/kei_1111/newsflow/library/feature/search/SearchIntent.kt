@@ -13,4 +13,5 @@ sealed interface SearchIntent : Intent {
     data object DismissArticleOverview : SearchIntent
     data object CopyArticleUrl : SearchIntent
     data object ShareArticle : SearchIntent
+    data object NavigateBack : SearchIntent
 }
