@@ -201,8 +201,9 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `ClearQuery intent clears query`() = runTest {
+    fun `ClearQuery intent clears query and articles`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
+        everySuspend { searchArticlesUseCase(any()) } returns Result.success(emptyList())
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -214,10 +215,12 @@ class SearchViewModelTest {
             assertEquals("kotlin", updatedState.query)
 
             viewModel.onIntent(SearchIntent.ClearQuery)
+            testDispatcher.scheduler.advanceUntilIdle()
 
-            val clearedState = awaitItem()
+            val clearedState = expectMostRecentItem()
             assertIs<SearchState.Stable>(clearedState)
             assertEquals("", clearedState.query)
+            assertEquals(emptyList(), clearedState.articles)
         }
     }
 

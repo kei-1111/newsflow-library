@@ -31,8 +31,13 @@ class SearchViewModel(
         _viewModelState
             .map { it.query }
             .distinctUntilChanged()
-            .debounce(DEBOUNCE_MILLIS)
+            .onEach { query ->
+                if (query.isBlank()) {
+                    updateViewModelState { copy(articles = emptyList()) }
+                }
+            }
             .filter { it.isNotBlank() }
+            .debounce(DEBOUNCE_MILLIS)
             .onEach { query -> executeSearch(query) }
             .launchIn(viewModelScope)
     }
