@@ -22,9 +22,21 @@ internal class NewsApiServiceImpl(
         }.body()
     }
 
+    override suspend fun searchArticles(
+        query: String
+    ): Result<NewsResponse> = safeApiCall {
+        client.get(BASE_URL + EVERYTHING) {
+            header("X-Api-Key", apiKey)
+            parameter("q", query)
+            parameter("sortBy", SORT_BY_RELEVANCY)
+        }.body()
+    }
+
     private companion object {
         const val BASE_URL = "https://newsapi.org/v2/"
         const val TOP_HEADLINES = "top-headlines"
+        const val EVERYTHING = "everything"
         const val COUNTRY = "us"
+        const val SORT_BY_RELEVANCY = "relevancy"
     }
 }
