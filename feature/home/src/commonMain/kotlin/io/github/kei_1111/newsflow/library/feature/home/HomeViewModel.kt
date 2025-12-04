@@ -22,7 +22,7 @@ class HomeViewModel(
 
     override fun onIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.NavigateViewer -> {
+            is HomeIntent.SelectArticle -> {
                 sendEffect(HomeEffect.NavigateViewer(intent.article.id))
             }
             is HomeIntent.ChangeCategory -> {

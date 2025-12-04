@@ -74,14 +74,14 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `NavigateViewer intent emits NavigateViewer effect with article url`() = runTest {
+    fun `SelectArticle intent emits NavigateViewer effect with article id`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
         val article = createTestArticle(1)
 
         viewModel.effect.test {
-            viewModel.onIntent(HomeIntent.NavigateViewer(article))
+            viewModel.onIntent(HomeIntent.SelectArticle(article))
 
             val effect = awaitItem()
             assertIs<HomeEffect.NavigateViewer>(effect)
