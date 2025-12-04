@@ -47,9 +47,6 @@ class SearchViewModel(
             is SearchIntent.UpdateQuery -> {
                 updateViewModelState { copy(query = intent.query) }
             }
-            is SearchIntent.ExecuteSearch -> {
-                executeSearchFromButton()
-            }
             is SearchIntent.ClearQuery -> {
                 updateViewModelState { copy(query = "") }
             }
@@ -83,13 +80,6 @@ class SearchViewModel(
             is SearchIntent.NavigateBack -> {
                 sendEffect(SearchEffect.NavigateBack)
             }
-        }
-    }
-
-    private fun executeSearchFromButton() {
-        val query = _viewModelState.value.query
-        if (query.isNotBlank()) {
-            executeSearch(query)
         }
     }
 

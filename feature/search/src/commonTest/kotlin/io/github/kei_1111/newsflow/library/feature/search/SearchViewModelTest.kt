@@ -141,43 +141,6 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `ExecuteSearch intent triggers immediate search`() = runTest {
-        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val articles = createTestArticles(3)
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(articles)
-        val viewModel = SearchViewModel(searchArticlesUseCase)
-
-        viewModel.state.test {
-            skipItems(1) // initial state
-
-            viewModel.onIntent(SearchIntent.UpdateQuery("kotlin"))
-            awaitItem() // query updated
-
-            viewModel.onIntent(SearchIntent.ExecuteSearch)
-            testDispatcher.scheduler.advanceUntilIdle()
-
-            val successState = expectMostRecentItem()
-            assertIs<SearchState.Stable>(successState)
-            assertFalse(successState.isSearching)
-            assertEquals(articles, successState.articles)
-        }
-    }
-
-    @Test
-    fun `ExecuteSearch does nothing when query is blank`() = runTest {
-        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
-
-        viewModel.state.test {
-            skipItems(1) // initial state
-
-            viewModel.onIntent(SearchIntent.ExecuteSearch)
-
-            expectNoEvents()
-        }
-    }
-
-    @Test
     fun `search failure transitions to error state`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
@@ -190,7 +153,8 @@ class SearchViewModelTest {
             viewModel.onIntent(SearchIntent.UpdateQuery("kotlin"))
             awaitItem() // query updated
 
-            viewModel.onIntent(SearchIntent.ExecuteSearch)
+            // デバウンス時間経過後に検索が実行される
+            advanceTimeBy(1100)
             testDispatcher.scheduler.advanceUntilIdle()
 
             val errorState = expectMostRecentItem()
