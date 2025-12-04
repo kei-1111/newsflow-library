@@ -37,6 +37,7 @@ include(":core:mvi")
 include(":core:network")
 
 include(":feature:home")
+include(":feature:search")
 include(":feature:viewer")
 
 include(":shared")
