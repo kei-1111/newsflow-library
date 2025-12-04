@@ -56,6 +56,9 @@ class HomeViewModel(
             is HomeIntent.Refresh -> {
                 refreshArticles()
             }
+            is HomeIntent.NavigateSearch -> {
+                sendEffect(HomeEffect.NavigateSearch)
+            }
         }
     }
 
