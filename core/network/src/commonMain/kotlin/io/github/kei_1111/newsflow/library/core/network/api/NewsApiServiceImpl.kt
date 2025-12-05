@@ -23,12 +23,19 @@ internal class NewsApiServiceImpl(
     }
 
     override suspend fun searchArticles(
-        query: String
+        query: String,
+        sortBy: String?,
+        from: String?,
+        to: String?,
+        language: String?,
     ): Result<NewsResponse> = safeApiCall {
         client.get(BASE_URL + EVERYTHING) {
             header("X-Api-Key", apiKey)
             parameter("q", query)
-            parameter("sortBy", SORT_BY_RELEVANCY)
+            sortBy?.let { parameter("sortBy", it) }
+            from?.let { parameter("from", it) }
+            to?.let { parameter("to", it) }
+            language?.let { parameter("language", it) }
         }.body()
     }
 
@@ -37,6 +44,5 @@ internal class NewsApiServiceImpl(
         const val TOP_HEADLINES = "top-headlines"
         const val EVERYTHING = "everything"
         const val COUNTRY = "us"
-        const val SORT_BY_RELEVANCY = "relevancy"
     }
 }
