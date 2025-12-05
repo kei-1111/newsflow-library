@@ -10,7 +10,7 @@ sealed interface SearchIntent : Intent {
     data class UpdateQuery(val query: String) : SearchIntent
     data object ClearQuery : SearchIntent
     data object RetrySearch : SearchIntent
-    data class SelectArticle(val article: Article) : SearchIntent
+    data class NavigateViewer(val article: Article) : SearchIntent
     data class ShowArticleOverview(val article: Article) : SearchIntent
     data object DismissArticleOverview : SearchIntent
     data object CopyArticleUrl : SearchIntent

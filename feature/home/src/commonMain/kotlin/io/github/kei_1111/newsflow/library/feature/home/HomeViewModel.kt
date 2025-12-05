@@ -22,7 +22,7 @@ class HomeViewModel(
 
     override fun onIntent(intent: HomeIntent) {
         when (intent) {
-            is HomeIntent.SelectArticle -> {
+            is HomeIntent.NavigateViewer -> {
                 sendEffect(HomeEffect.NavigateViewer(intent.article.id))
             }
             is HomeIntent.ChangeCategory -> {
@@ -52,7 +52,7 @@ class HomeViewModel(
             is HomeIntent.RetryLoad -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
-            is HomeIntent.Refresh -> {
+            is HomeIntent.RefreshArticles -> {
                 refreshArticles()
             }
             is HomeIntent.NavigateSearch -> {

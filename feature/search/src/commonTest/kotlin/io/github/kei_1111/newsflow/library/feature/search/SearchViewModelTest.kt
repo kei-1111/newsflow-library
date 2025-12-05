@@ -210,13 +210,13 @@ class SearchViewModelTest {
     }
 
     @Test
-    fun `SelectArticle intent emits NavigateViewer effect`() = runTest {
+    fun `NavigateViewer intent emits NavigateViewer effect`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val viewModel = SearchViewModel(searchArticlesUseCase)
         val article = createTestArticle(1)
 
         viewModel.effect.test {
-            viewModel.onIntent(SearchIntent.SelectArticle(article))
+            viewModel.onIntent(SearchIntent.NavigateViewer(article))
 
             val effect = awaitItem()
             assertIs<SearchEffect.NavigateViewer>(effect)

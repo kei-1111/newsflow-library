@@ -56,7 +56,7 @@ class SearchViewModel(
             is SearchIntent.RetrySearch -> {
                 retrySearch()
             }
-            is SearchIntent.SelectArticle -> {
+            is SearchIntent.NavigateViewer -> {
                 sendEffect(SearchEffect.NavigateViewer(intent.article.id))
             }
             is SearchIntent.ShowArticleOverview -> {
