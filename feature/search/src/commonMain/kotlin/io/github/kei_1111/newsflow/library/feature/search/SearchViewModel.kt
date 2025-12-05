@@ -38,8 +38,8 @@ class SearchViewModel(
                     updateViewModelState { copy(articles = emptyList()) }
                 }
             }
-            .filter { it.isNotBlank() }
             .debounce(DEBOUNCE_MILLIS)
+            .filter { it.isNotBlank() }
             .onEach { query -> executeSearch(query) }
             .launchIn(viewModelScope)
     }
