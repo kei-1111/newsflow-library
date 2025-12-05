@@ -470,4 +470,221 @@ class NewsRepositoryImplTest {
         assertTrue(result.isFailure)
         assertIs<NewsflowError.InternalError.ArticleNotFound>(result.exceptionOrNull())
     }
+
+    // searchArticles tests
+    @Test
+    fun `searchArticles returns success with articles when API call succeeds`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 2,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Search Source 1"),
+                    author = "Search Author 1",
+                    title = "Search Title 1",
+                    description = "Search Description 1",
+                    url = "https://example.com/search1",
+                    urlToImage = "https://example.com/image1.jpg",
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = "Search Content 1",
+                ),
+                ArticleResponse(
+                    source = SourceResponse(id = "search-id", name = "Search Source 2"),
+                    author = null,
+                    title = "Search Title 2",
+                    description = null,
+                    url = "https://example.com/search2",
+                    urlToImage = null,
+                    publishedAt = "2024-01-02T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.success(newsResponse)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.searchArticles("kotlin")
+
+        assertTrue(result.isSuccess)
+        val articles = result.getOrNull()!!
+        assertEquals(2, articles.size)
+        assertEquals("Search Source 1", articles[0].source)
+        assertEquals("Search Title 1", articles[0].title)
+        assertEquals("Search Source 2", articles[1].source)
+        assertEquals("Search Title 2", articles[1].title)
+    }
+
+    @Test
+    fun `searchArticles returns failure when API returns error`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val exception = NetworkException.NetworkFailure("Network error")
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.failure(exception)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        val error = result.exceptionOrNull()
+        assertIs<NewsflowError.NetworkError.NetworkFailure>(error)
+        assertEquals("Network error", error.message)
+    }
+
+    @Test
+    fun `searchArticles returns cached data on second call with same parameters`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.success(newsResponse)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.searchArticles("kotlin", "publishedAt", "2025-01-01", "2025-01-31", "en")
+        val result = repository.searchArticles("kotlin", "publishedAt", "2025-01-01", "2025-01-31", "en")
+
+        assertTrue(result.isSuccess)
+        verifySuspend(exactly(1)) {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `searchArticles calls API again with different parameters`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Test Source"),
+                    author = "Test Author",
+                    title = "Test Title",
+                    description = "Test Description",
+                    url = "https://example.com/1",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.success(newsResponse)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.searchArticles("kotlin")
+        repository.searchArticles("android")
+
+        verifySuspend(exactly(2)) {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        }
+    }
+
+    @Test
+    fun `searchArticles passes all parameters to API`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 0,
+            articles = emptyList(),
+        )
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.success(newsResponse)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.searchArticles(
+            query = "kotlin",
+            sortBy = "publishedAt",
+            from = "2025-01-01",
+            to = "2025-01-31",
+            language = "en",
+        )
+
+        verifySuspend {
+            newsApiService.searchArticles("kotlin", "publishedAt", "2025-01-01", "2025-01-31", "en")
+        }
+    }
+
+    @Test
+    fun `getArticleById finds article from searchCache`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val newsResponse = NewsResponse(
+            status = "ok",
+            totalResults = 1,
+            articles = listOf(
+                ArticleResponse(
+                    source = SourceResponse(id = null, name = "Search Source"),
+                    author = "Search Author",
+                    title = "Search Title",
+                    description = "Search Description",
+                    url = "https://example.com/search",
+                    urlToImage = null,
+                    publishedAt = "2024-01-01T00:00:00Z",
+                    content = null,
+                ),
+            ),
+        )
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.success(newsResponse)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        repository.searchArticles("kotlin")
+        val articleId = "https://example.com/search".hashCode().toString()
+        val result = repository.getArticleById(articleId)
+
+        assertTrue(result.isSuccess)
+        val article = result.getOrNull()!!
+        assertEquals("Search Title", article.title)
+    }
+
+    @Test
+    fun `searchArticles propagates Unauthorized error from API`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val exception = NetworkException.Unauthorized("Invalid API key")
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.failure(exception)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        assertIs<NewsflowError.NetworkError.Unauthorized>(result.exceptionOrNull())
+    }
+
+    @Test
+    fun `searchArticles propagates RateLimitExceeded error from API`() = runTest {
+        val newsApiService = mock<NewsApiService>()
+        val exception = NetworkException.RateLimitExceeded("Rate limit exceeded")
+        everySuspend {
+            newsApiService.searchArticles(any(), any(), any(), any(), any())
+        } returns Result.failure(exception)
+        val repository = NewsRepositoryImpl(newsApiService)
+
+        val result = repository.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        assertIs<NewsflowError.NetworkError.RateLimitExceeded>(result.exceptionOrNull())
+    }
 }

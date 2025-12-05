@@ -40,12 +40,11 @@ class HomeViewModel(
                 }
             }
             is HomeIntent.ShareArticle -> {
-                val article = _viewModelState.value.selectedArticle
-                article?.let {
+                _viewModelState.value.selectedArticle?.let {
                     sendEffect(
                         HomeEffect.ShareArticle(
-                            title = article.title,
-                            url = article.url,
+                            title = it.title,
+                            url = it.url,
                         )
                     )
                 }
@@ -53,8 +52,11 @@ class HomeViewModel(
             is HomeIntent.RetryLoad -> {
                 fetchArticles(_viewModelState.value.currentNewsCategory)
             }
-            is HomeIntent.Refresh -> {
+            is HomeIntent.RefreshArticles -> {
                 refreshArticles()
+            }
+            is HomeIntent.NavigateSearch -> {
+                sendEffect(HomeEffect.NavigateSearch)
             }
         }
     }

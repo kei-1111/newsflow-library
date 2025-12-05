@@ -1,15 +1,12 @@
----
-name: newsflow-naming
-description: newsflow-libraryの命名規則を適用します。クラス、インターフェース、関数、変数、ファイル、モジュール、パッケージの命名時に使用してください。Intent、Effect、State、UseCase、Repository、ViewModel等の新規作成・リネーム時に特に重要です。
----
+# 命名規則
 
-# Newsflow Naming Rules
+## 参照ファイル
 
-命名に迷った場合は `docs/NAMING_CONVENTION.md` を参照。
+- 詳細ドキュメント: `docs/NAMING_CONVENTION.md`
+- Intent例: `feature/home/src/commonMain/kotlin/.../HomeIntent.kt`
+- Effect例: `feature/home/src/commonMain/kotlin/.../HomeEffect.kt`
 
-## クイックリファレンス
-
-### ケース規則
+## ケース規則
 
 | 対象 | ケース | 例 |
 |-----|-------|-----|
@@ -19,7 +16,7 @@ description: newsflow-libraryの命名規則を適用します。クラス、イ
 | パッケージ | 小文字ドット区切り | `io.github.kei_1111.newsflow.library` |
 | モジュール | ケバブケース | `core:model`, `feature:home` |
 
-### MVI要素
+## MVI要素
 
 | 種類 | パターン | 例 |
 |-----|---------|-----|
@@ -29,7 +26,7 @@ description: newsflow-libraryの命名規則を適用します。クラス、イ
 | Intent | `{Feature}Intent` | `HomeIntent` |
 | Effect | `{Feature}Effect` | `HomeEffect` |
 
-### レイヤー別
+## レイヤー別
 
 | 種類 | パターン | 例 |
 |-----|---------|-----|
@@ -37,21 +34,50 @@ description: newsflow-libraryの命名規則を適用します。クラス、イ
 | UseCase (Impl) | `{動詞}{対象}UseCaseImpl` | `FetchTopHeadlineArticlesUseCaseImpl` |
 | Repository (Interface) | `{Domain}Repository` | `NewsRepository` |
 | Repository (Impl) | `{Domain}RepositoryImpl` | `NewsRepositoryImpl` |
-| Fake | `Fake{Interface}` | `FakeNewsRepository` |
+| テストクラス | `{TargetClass}Test` | `HomeViewModelTest` |
 
 ## Intent命名（重要）
 
-**パターン**: `動詞 + 対象`
+**基本パターン**: `動詞 + 対象`（意図ベース＝「何をしたいか」）
 
 ```kotlin
-// ✅ Good: 意図ベース
-NavigateViewer, ChangeCategory, RetryLoad, ShareArticle
+// Good: 意図ベース（何をしたいか）
+NavigateViewer, ChangeCategory, RetryLoad, ShareArticle, RefreshArticles
 
-// ❌ Bad: 操作ベース（禁止）
+// Bad: 操作ベース（禁止）
 OnClickArticleCard, OnSwipeCategory, OnLongPressArticle
+
+// Bad: 選択ベース（何をしたいかではない）
+SelectArticle, Refresh
 ```
 
-**理由**: 操作ベースだと同じ処理を行う異なる操作（スワイプ/タップ）で重複が発生。
+**理由**:
+- 操作ベースだと同じ処理を行う異なる操作（スワイプ/タップ）で重複が発生
+- `SelectArticle`より`NavigateViewer`の方が「ビューアに遷移したい」という意図が明確
+
+### 状態更新系Intent
+
+**パターン**: `Update{対象}`
+
+```kotlin
+UpdateQuery, UpdateSortBy, UpdateDateRange, UpdateLanguage
+```
+
+### UI表示制御系Intent
+
+**パターン**: `Show{対象}` / `Dismiss{対象}`
+
+```kotlin
+ShowArticleOverview, DismissArticleOverview, ShowOptionsSheet, DismissOptionsSheet
+```
+
+### ナビゲーション系Intent
+
+**パターン**: `Navigate{目的地}` / `NavigateBack`
+
+```kotlin
+NavigateSearch, NavigateBack
+```
 
 ## Effect命名
 
@@ -74,47 +100,11 @@ NavigateViewer, CopyUrl, ShareArticle, ShowToast
 | `Update` | データ更新 |
 | `Search` | 検索 |
 
-## State プロパティ命名
-
-```kotlin
-// Boolean型
-isLoading, isRefreshing, isEnabled
-
-// 現在選択中
-currentNewsCategory, currentUser
-
-// Map型
-articlesByCategory, usersByRole
-```
-
 ## テストメソッド命名
 
-**パターン**: バッククォート + `should {期待} when {条件}`
+**パターン**: バッククォート + 説明文
 
 ```kotlin
 `should return success when articles are fetched successfully`
 `should return error when network fails`
-```
-
-## 決定フローチャート
-
-### 新規ファイル作成時
-
-```
-何を作る？
-├─ ViewModel関連 → {Feature} + (ViewModel|State|Intent|Effect|ViewModelState)
-├─ UseCase → {動詞}{対象}UseCase
-├─ Repository → {Domain}Repository(Impl)
-├─ テスト → {TargetClass}Test
-└─ Fake → Fake{Interface}
-```
-
-### 関数命名時
-
-```
-何をする関数？
-├─ データ取得 → fetch{Remote} / get{Local}
-├─ 状態更新 → update{State} / set{Property}
-├─ 検証 → validate{Target} / is{Condition}
-└─ 変換 → to{Target} / map{Source}To{Target}
 ```

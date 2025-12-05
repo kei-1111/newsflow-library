@@ -9,4 +9,12 @@ interface NewsRepository {
     ): Result<List<Article>>
 
     suspend fun getArticleById(id: String): Result<Article>
+
+    suspend fun searchArticles(
+        query: String,
+        sortBy: String? = null,
+        from: String? = null,
+        to: String? = null,
+        language: String? = null,
+    ): Result<List<Article>>
 }

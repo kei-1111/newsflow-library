@@ -12,6 +12,7 @@ internal class NewsRepositoryImpl(
     private val newsApiService: NewsApiService,
 ) : NewsRepository {
     private val cache = mutableMapOf<String, List<Article>>()
+    private val searchCache = mutableMapOf<String, List<Article>>()
     private val cacheMutex = Mutex()
 
     override suspend fun fetchArticles(
@@ -37,7 +38,30 @@ internal class NewsRepositoryImpl(
 
     override suspend fun getArticleById(id: String): Result<Article> = cacheMutex.withLock {
         val article = cache.values.flatten().firstOrNull { it.id == id }
+            ?: searchCache.values.flatten().firstOrNull { it.id == id }
         article?.let { Result.success(it) }
             ?: Result.failure(NewsflowError.InternalError.ArticleNotFound("Article with id $id not found"))
+    }
+
+    override suspend fun searchArticles(
+        query: String,
+        sortBy: String?,
+        from: String?,
+        to: String?,
+        language: String?,
+    ): Result<List<Article>> = cacheMutex.withLock {
+        val cacheKey = "$query-$sortBy-$from-$to-$language"
+        searchCache[cacheKey]?.let { return@withLock Result.success(it) }
+
+        return@withLock newsApiService.searchArticles(query, sortBy, from, to, language).fold(
+            onSuccess = { response ->
+                val articles = response.toArticles()
+                searchCache[cacheKey] = articles
+                Result.success(articles)
+            },
+            onFailure = { error ->
+                Result.failure(error.toNewsflowError())
+            },
+        )
     }
 }

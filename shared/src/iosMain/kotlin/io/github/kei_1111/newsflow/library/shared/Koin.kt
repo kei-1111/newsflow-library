@@ -5,6 +5,7 @@ import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.HomeViewModel
 import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
+import io.github.kei_1111.newsflow.library.feature.search.di.searchModule
 import io.github.kei_1111.newsflow.library.feature.viewer.di.viewerModule
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
@@ -17,6 +18,7 @@ actual fun initKoin(newsApiKey: String, appContext: Any?) {
             dataModule,
             domainModule,
             homeModule,
+            searchModule,
             viewerModule,
         )
     }.koin

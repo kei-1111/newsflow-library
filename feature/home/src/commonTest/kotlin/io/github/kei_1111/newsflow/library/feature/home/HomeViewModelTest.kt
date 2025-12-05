@@ -74,7 +74,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `NavigateViewer intent emits NavigateViewer effect with article url`() = runTest {
+    fun `NavigateViewer intent emits NavigateViewer effect with article id`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val viewModel = HomeViewModel(fetchArticlesUseCase)
@@ -345,7 +345,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `Refresh intent sets isRefreshing and fetches articles with forceRefresh successfully`() = runTest {
+    fun `RefreshArticles intent sets isRefreshing and fetches articles with forceRefresh successfully`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val initialArticles = createTestArticles(3, "Initial")
         val refreshedArticles = createTestArticles(3, "Refreshed")
@@ -356,7 +356,7 @@ class HomeViewModelTest {
             skipInitialization()
 
             everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(refreshedArticles)
-            viewModel.onIntent(HomeIntent.Refresh)
+            viewModel.onIntent(HomeIntent.RefreshArticles)
 
             val refreshingState = awaitItem()
             assertIs<HomeState.Stable>(refreshingState)
@@ -370,7 +370,7 @@ class HomeViewModelTest {
     }
 
     @Test
-    fun `Refresh intent fails and sets error state`() = runTest {
+    fun `RefreshArticles intent fails and sets error state`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val initialArticles = createTestArticles(3, "Initial")
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
@@ -383,7 +383,7 @@ class HomeViewModelTest {
 
             // リフレッシュ時にエラーを返すように設定
             everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
-            viewModel.onIntent(HomeIntent.Refresh)
+            viewModel.onIntent(HomeIntent.RefreshArticles)
 
             val refreshingState = awaitItem()
             assertIs<HomeState.Stable>(refreshingState)
