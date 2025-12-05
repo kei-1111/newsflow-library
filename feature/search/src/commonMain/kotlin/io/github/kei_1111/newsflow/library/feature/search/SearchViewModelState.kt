@@ -3,6 +3,7 @@ package io.github.kei_1111.newsflow.library.feature.search
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.ViewModelState
+import io.github.kei_1111.newsflow.library.feature.search.model.SearchOptions
 
 data class SearchViewModelState(
     val statusType: StatusType = StatusType.STABLE,
@@ -11,6 +12,8 @@ data class SearchViewModelState(
     val articles: List<Article> = emptyList(),
     val selectedArticle: Article? = null,
     val error: NewsflowError? = null,
+    val searchOptions: SearchOptions = SearchOptions(),
+    val isOptionsSheetVisible: Boolean = false,
 ) : ViewModelState<SearchState> {
     enum class StatusType { STABLE, ERROR }
 
@@ -20,6 +23,8 @@ data class SearchViewModelState(
             isSearching = isSearching,
             articles = articles,
             selectedArticle = selectedArticle,
+            searchOptions = searchOptions,
+            isOptionsSheetVisible = isOptionsSheetVisible,
         )
 
         StatusType.ERROR -> SearchState.Error(

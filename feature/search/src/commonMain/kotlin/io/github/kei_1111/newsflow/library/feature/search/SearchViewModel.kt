@@ -6,6 +6,8 @@ import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
+import io.github.kei_1111.newsflow.library.feature.search.model.SearchOptions
+import io.github.kei_1111.newsflow.library.feature.search.model.toDateRange
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -80,13 +82,41 @@ class SearchViewModel(
             is SearchIntent.NavigateBack -> {
                 sendEffect(SearchEffect.NavigateBack)
             }
+            is SearchIntent.ShowOptionsSheet -> {
+                updateViewModelState { copy(isOptionsSheetVisible = true) }
+            }
+            is SearchIntent.DismissOptionsSheet -> {
+                updateViewModelState { copy(isOptionsSheetVisible = false) }
+            }
+            is SearchIntent.UpdateSortBy -> {
+                updateSearchOptions { copy(sortBy = intent.sortBy) }
+            }
+            is SearchIntent.UpdateDateRange -> {
+                updateSearchOptions { copy(dateRangePreset = intent.preset) }
+            }
+            is SearchIntent.UpdateLanguage -> {
+                updateSearchOptions { copy(language = intent.language) }
+            }
         }
+    }
+
+    private fun updateSearchOptions(update: SearchOptions.() -> SearchOptions) {
+        updateViewModelState { copy(searchOptions = searchOptions.update()) }
+        retrySearch()
     }
 
     private fun executeSearch(query: String) {
         setSearchingState()
+        val options = _viewModelState.value.searchOptions
+        val (from, to) = options.dateRangePreset.toDateRange()
         viewModelScope.launch {
-            searchArticlesUseCase(query)
+            searchArticlesUseCase(
+                query = query,
+                sortBy = options.sortBy.apiValue,
+                from = from,
+                to = to,
+                language = options.language.apiValue,
+            )
                 .onSuccess { articles ->
                     handleSearchSuccess(articles)
                 }
