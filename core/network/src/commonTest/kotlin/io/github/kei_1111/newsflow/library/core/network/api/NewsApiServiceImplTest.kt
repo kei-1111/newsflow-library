@@ -118,6 +118,159 @@ class NewsApiServiceImplTest {
         service.fetchTopHeadlines("technology")
     }
 
+    // searchArticles tests
+    @Test
+    fun `searchArticles returns success when API returns valid response`() = runTest {
+        val mockEngine = MockEngine { request ->
+            assertEquals("https://newsapi.org/v2/everything", request.url.toString().substringBefore('?'))
+            respond(
+                content = ByteReadChannel(VALID_RESPONSE_JSON),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        val result = service.searchArticles("kotlin")
+
+        assertTrue(result.isSuccess)
+        val response = result.getOrNull()
+        assertEquals("ok", response?.status)
+        assertEquals(2, response?.articles?.size)
+    }
+
+    @Test
+    fun `searchArticles returns failure when API returns 401 Unauthorized`() = runTest {
+        val mockEngine = MockEngine {
+            respond(
+                content = ByteReadChannel(
+                    """{"status":"error","code":"apiKeyInvalid","message":"Your API key is invalid"}"""
+                ),
+                status = HttpStatusCode.Unauthorized,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        val result = service.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        assertEquals("Invalid API key", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `searchArticles returns failure when API returns 429 Rate Limit`() = runTest {
+        val mockEngine = MockEngine {
+            respond(
+                content = ByteReadChannel(
+                    """{"status":"error","code":"rateLimited","message":"You have made too many requests"}"""
+                ),
+                status = HttpStatusCode.TooManyRequests,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        val result = service.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        assertEquals("Rate limit exceeded", result.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `searchArticles returns failure when API returns 500 Server Error`() = runTest {
+        val mockEngine = MockEngine {
+            respond(
+                content = ByteReadChannel("""{"status":"error","message":"Internal server error"}"""),
+                status = HttpStatusCode.InternalServerError,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        val result = service.searchArticles("kotlin")
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull()?.message?.contains("Server error") == true)
+    }
+
+    @Test
+    fun `searchArticles includes correct headers and query parameter`() = runTest {
+        val mockEngine = MockEngine { request ->
+            assertEquals("kotlin", request.url.parameters["q"])
+            assertTrue(request.headers.contains("X-Api-Key"))
+
+            respond(
+                content = ByteReadChannel(VALID_RESPONSE_JSON),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        service.searchArticles("kotlin")
+    }
+
+    @Test
+    fun `searchArticles includes all optional parameters when provided`() = runTest {
+        val mockEngine = MockEngine { request ->
+            assertEquals("kotlin", request.url.parameters["q"])
+            assertEquals("publishedAt", request.url.parameters["sortBy"])
+            assertEquals("2025-01-01", request.url.parameters["from"])
+            assertEquals("2025-01-31", request.url.parameters["to"])
+            assertEquals("en", request.url.parameters["language"])
+
+            respond(
+                content = ByteReadChannel(VALID_RESPONSE_JSON),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        service.searchArticles(
+            query = "kotlin",
+            sortBy = "publishedAt",
+            from = "2025-01-01",
+            to = "2025-01-31",
+            language = "en",
+        )
+    }
+
+    @Test
+    fun `searchArticles excludes optional parameters when null`() = runTest {
+        val mockEngine = MockEngine { request ->
+            assertEquals("kotlin", request.url.parameters["q"])
+            assertEquals(null, request.url.parameters["sortBy"])
+            assertEquals(null, request.url.parameters["from"])
+            assertEquals(null, request.url.parameters["to"])
+            assertEquals(null, request.url.parameters["language"])
+
+            respond(
+                content = ByteReadChannel(VALID_RESPONSE_JSON),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json")
+            )
+        }
+
+        val client = HttpClient(mockEngine) { defaultConfig() }
+        val service = NewsApiServiceImpl(client, "test-api-key")
+
+        service.searchArticles(query = "kotlin")
+    }
+
     companion object {
         private val VALID_RESPONSE_JSON = """
             {
