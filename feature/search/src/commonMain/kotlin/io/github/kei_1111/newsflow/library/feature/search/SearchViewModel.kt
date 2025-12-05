@@ -44,6 +44,7 @@ class SearchViewModel(
             .launchIn(viewModelScope)
     }
 
+    @Suppress("CyclomaticComplexMethod")
     override fun onIntent(intent: SearchIntent) {
         when (intent) {
             is SearchIntent.UpdateQuery -> {
