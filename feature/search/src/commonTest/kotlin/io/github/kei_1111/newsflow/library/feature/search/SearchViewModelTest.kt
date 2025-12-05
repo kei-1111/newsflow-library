@@ -57,7 +57,7 @@ class SearchViewModelTest {
     @Test
     fun `UpdateQuery intent updates query in state`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(emptyList())
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(emptyList())
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -75,7 +75,7 @@ class SearchViewModelTest {
     fun `debounce search executes after delay`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(articles)
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -109,7 +109,7 @@ class SearchViewModelTest {
     fun `debounce resets when new query is entered`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(articles)
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -144,7 +144,7 @@ class SearchViewModelTest {
     fun `search failure transitions to error state`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
-        everySuspend { searchArticlesUseCase(any()) } returns Result.failure(error)
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.failure(error)
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -167,7 +167,7 @@ class SearchViewModelTest {
     @Test
     fun `ClearQuery intent clears query and articles`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(emptyList())
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(emptyList())
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
@@ -192,7 +192,7 @@ class SearchViewModelTest {
     fun `RetrySearch intent retries search with current query`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
-        everySuspend { searchArticlesUseCase(any()) } returns Result.success(articles)
+        everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
         val viewModel = SearchViewModel(searchArticlesUseCase)
 
         viewModel.state.test {
