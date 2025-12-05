@@ -35,8 +35,8 @@ private const val ONE_DAY = 1
 private const val DAYS_IN_WEEK = 7
 private const val ONE_MONTH = 1
 
-fun DateRangePreset.toDateRange(): Pair<String?, String?> {
-    val now = Clock.System.now()
+fun DateRangePreset.toDateRange(clock: Clock = Clock.System): Pair<String?, String?> {
+    val now = clock.now()
     val today = now.toLocalDateTime(TimeZone.UTC).date
     return when (this) {
         DateRangePreset.ALL -> null to null
