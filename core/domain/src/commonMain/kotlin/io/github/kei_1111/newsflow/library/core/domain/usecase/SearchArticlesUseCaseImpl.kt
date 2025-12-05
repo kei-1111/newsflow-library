@@ -7,12 +7,18 @@ import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 internal class SearchArticlesUseCaseImpl(
     private val newsRepository: NewsRepository,
 ) : SearchArticlesUseCase {
-    override suspend operator fun invoke(query: String): Result<List<Article>> {
+    override suspend operator fun invoke(
+        query: String,
+        sortBy: String?,
+        from: String?,
+        to: String?,
+        language: String?,
+    ): Result<List<Article>> {
         if (query.isBlank()) {
             return Result.failure(
                 NewsflowError.InternalError.InvalidParameter("Search query cannot be empty")
             )
         }
-        return newsRepository.searchArticles(query.trim())
+        return newsRepository.searchArticles(query.trim(), sortBy, from, to, language)
     }
 }
