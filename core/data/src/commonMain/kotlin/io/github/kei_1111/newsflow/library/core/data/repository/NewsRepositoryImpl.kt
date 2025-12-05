@@ -51,6 +51,8 @@ internal class NewsRepositoryImpl(
         language: String?,
     ): Result<List<Article>> = cacheMutex.withLock {
         val cacheKey = "$query-$sortBy-$from-$to-$language"
+        searchCache[cacheKey]?.let { return@withLock Result.success(it) }
+
         return@withLock newsApiService.searchArticles(query, sortBy, from, to, language).fold(
             onSuccess = { response ->
                 val articles = response.toArticles()
