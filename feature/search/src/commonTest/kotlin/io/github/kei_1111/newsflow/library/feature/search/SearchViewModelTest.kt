@@ -159,7 +159,6 @@ class SearchViewModelTest {
 
             val errorState = expectMostRecentItem()
             assertIs<SearchState.Error>(errorState)
-            assertEquals("kotlin", errorState.query)
             assertEquals(error, errorState.error)
         }
     }

@@ -28,7 +28,6 @@ data class SearchViewModelState(
         )
 
         StatusType.ERROR -> SearchState.Error(
-            query = query,
             error = requireNotNull(error) { "Error must not be null when statusType is ERROR" },
         )
     }

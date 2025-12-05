@@ -16,7 +16,6 @@ sealed interface SearchState : State {
     ) : SearchState
 
     data class Error(
-        val query: String,
         val error: NewsflowError,
     ) : SearchState
 }
