@@ -43,11 +43,18 @@ internal class NewsRepositoryImpl(
             ?: Result.failure(NewsflowError.InternalError.ArticleNotFound("Article with id $id not found"))
     }
 
-    override suspend fun searchArticles(query: String): Result<List<Article>> = cacheMutex.withLock {
-        return@withLock newsApiService.searchArticles(query).fold(
+    override suspend fun searchArticles(
+        query: String,
+        sortBy: String?,
+        from: String?,
+        to: String?,
+        language: String?,
+    ): Result<List<Article>> = cacheMutex.withLock {
+        val cacheKey = "$query-$sortBy-$from-$to-$language"
+        return@withLock newsApiService.searchArticles(query, sortBy, from, to, language).fold(
             onSuccess = { response ->
                 val articles = response.toArticles()
-                searchCache[query] = articles
+                searchCache[cacheKey] = articles
                 Result.success(articles)
             },
             onFailure = { error ->
