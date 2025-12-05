@@ -40,12 +40,11 @@ class HomeViewModel(
                 }
             }
             is HomeIntent.ShareArticle -> {
-                val article = _viewModelState.value.selectedArticle
-                article?.let {
+                _viewModelState.value.selectedArticle?.let {
                     sendEffect(
                         HomeEffect.ShareArticle(
-                            title = article.title,
-                            url = article.url,
+                            title = it.title,
+                            url = it.url,
                         )
                     )
                 }
