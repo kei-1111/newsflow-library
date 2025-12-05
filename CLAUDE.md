@@ -63,19 +63,14 @@ newsflow-libraryは、Android・iOS向けのKotlin Multiplatform (KMP)ニュー�
 2. 関連するRepository/UseCaseのテストを確認
 3. モックの設定が正しいか検証
 
-### 開発環境
-
-- JDK 21
-- Android Studio with KMP plugin
-- Xcode（iOS開発時）
-
 ## 詳細ドキュメント
 
 特定タスクの詳細は以下を参照:
 
 | ドキュメント | 内容 |
 |-------------|------|
-| `agent-docs/ARCHITECTURE.md` | モジュール構造、依存関係、Convention Plugins |
-| `agent-docs/MVI_PATTERN.md` | MVI実装パターン、ファイル構成、テンプレート |
-| `agent-docs/TESTING.md` | テスト戦略、Mokkery使用法、テストデータ生成 |
-| `agent-docs/KOIN_DI.md` | Koin DI設定、バインディングパターン |
+| `agent-docs/ARCHITECTURE_CONVENTION.md` | モジュール構造、依存関係、Convention Plugins |
+| `agent-docs/MVI_PATTERN_CONVENTION.md` | MVI実装パターン、ファイル構成、テンプレート |
+| `agent-docs/TESTING_CONVENTION.md` | テスト戦略、Mokkery使用法、テストデータ生成 |
+| `agent-docs/KOIN_DI_CONVENTION.md` | Koin DI設定、バインディングパターン |
+| `agent-docs/NAMING_CONVENTION.md` | 命名規則、Intent/Effect/UseCase命名パターン |
