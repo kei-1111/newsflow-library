@@ -1,11 +1,11 @@
 [versions]
-agp = "8.11.1"
+agp = "8.13.1"
 android-compileSdk = "36"
 android-minSdk = "29"
 android-targetSdk = "36"
 androidxLifecycle = "2.9.6"
 coroutines = "1.10.2"
-datetime = "0.6.1"
+datetime = "0.7.1-0.6.x-compat"
 detekt = "1.23.8"
 koin = "4.1.1"
 kotlin = "2.2.21"
@@ -14,7 +14,7 @@ ktor = "3.3.3"
 mokkery = "3.0.0"
 newsflowLibrary = "0.3.4"
 serialization = "2.2.21"
-serializationJson = "1.8.1"
+serializationJson = "1.9.0"
 turbine = "1.2.1"
 
 [libraries]
