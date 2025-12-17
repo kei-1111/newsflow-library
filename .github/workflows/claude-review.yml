@@ -36,12 +36,12 @@ jobs:
 
             このPRをレビューし、CLAUDE.mdとagent-docs/の規約に従って以下の観点でフィードバックを提供してください:
 
-            1. Material 3 Expressive準拠
-            2. Newsflowコンポーネント使用
-            3. UI規約準拠（agent-docs/UI_CONVENTION.md）
-            4. 命名規則準拠（agent-docs/NAMING_CONVENTION.md）
+            1. Clean Architecture + MVIパターン準拠
+            2. モジュール依存関係（フィーチャー間依存禁止、core:domain経由）
+            3. 命名規則準拠（agent-docs/NAMING_CONVENTION.md）
+            4. テスト規約準拠（agent-docs/TESTING_CONVENTION.md）
 
-            詳細な規約はCLAUDE.mdと.claude/skills/material3-expressive/SKILL.mdを参照してください。
+            詳細な規約はCLAUDE.mdとagent-docs/を参照してください。
 
             レビュー形式（日本語で出力）:
             ### レビューサマリー
@@ -89,12 +89,12 @@ jobs:
 
             このPRをレビューし、CLAUDE.mdとagent-docs/の規約に従って以下の観点でフィードバックを提供してください:
 
-            1. Material 3 Expressive準拠
-            2. Newsflowコンポーネント使用
-            3. UI規約準拠（agent-docs/UI_CONVENTION.md）
-            4. 命名規則準拠（agent-docs/NAMING_CONVENTION.md）
+            1. Clean Architecture + MVIパターン準拠
+            2. モジュール依存関係（フィーチャー間依存禁止、core:domain経由）
+            3. 命名規則準拠（agent-docs/NAMING_CONVENTION.md）
+            4. テスト規約準拠（agent-docs/TESTING_CONVENTION.md）
 
-            詳細な規約はCLAUDE.mdと.claude/skills/material3-expressive/SKILL.mdを参照してください。
+            詳細な規約はCLAUDE.mdとagent-docs/を参照してください。
 
             レビュー形式（日本語で出力）:
             ### レビューサマリー
