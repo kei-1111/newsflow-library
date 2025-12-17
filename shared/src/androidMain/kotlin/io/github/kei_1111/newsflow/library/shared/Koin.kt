@@ -10,11 +10,11 @@ import io.github.kei_1111.newsflow.library.feature.viewer.di.viewerModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
-actual fun initKoin(newsApiKey: String, appContext: Any?) {
+actual fun initKoin(newsApiKey: String, geminiApiKey: String, appContext: Any?) {
     startKoin {
         appContext?.let { androidContext(it as Context) }
         modules(
-            networkModule(newsApiKey),
+            networkModule(newsApiKey, geminiApiKey),
             dataModule,
             domainModule,
             homeModule,
