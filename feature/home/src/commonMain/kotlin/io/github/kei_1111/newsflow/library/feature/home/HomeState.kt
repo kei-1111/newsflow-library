@@ -12,6 +12,8 @@ sealed interface HomeState : State {
         val selectedArticle: Article? = null,
         val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
         val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
+        val isSummarizing: Boolean = false,
+        val summary: String = "",
     ) : HomeState
 
     data class Error(
