@@ -23,4 +23,8 @@ sealed interface SearchIntent : Intent {
     data class UpdateSortBy(val sortBy: SortBy) : SearchIntent
     data class UpdateDateRange(val preset: DateRangePreset) : SearchIntent
     data class UpdateLanguage(val language: SearchLanguage) : SearchIntent
+
+    // Summarize
+    data object SummarizeArticle : SearchIntent
+    data object DismissSummary : SearchIntent
 }

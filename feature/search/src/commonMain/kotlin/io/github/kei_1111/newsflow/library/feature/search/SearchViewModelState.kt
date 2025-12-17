@@ -14,6 +14,8 @@ data class SearchViewModelState(
     val error: NewsflowError? = null,
     val searchOptions: SearchOptions = SearchOptions(),
     val isOptionsSheetVisible: Boolean = false,
+    val isSummarizing: Boolean = false,
+    val summary: String = "",
 ) : ViewModelState<SearchState> {
     enum class StatusType { STABLE, ERROR }
 
@@ -25,6 +27,8 @@ data class SearchViewModelState(
             selectedArticle = selectedArticle,
             searchOptions = searchOptions,
             isOptionsSheetVisible = isOptionsSheetVisible,
+            isSummarizing = isSummarizing,
+            summary = summary,
         )
 
         StatusType.ERROR -> SearchState.Error(

@@ -2,6 +2,7 @@ package io.github.kei_1111.newsflow.library.feature.search
 
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.SearchArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
@@ -9,17 +10,21 @@ import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewMod
 import io.github.kei_1111.newsflow.library.feature.search.model.SearchOptions
 import io.github.kei_1111.newsflow.library.feature.search.model.toDateRange
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 @OptIn(FlowPreview::class)
 class SearchViewModel(
     private val searchArticlesUseCase: SearchArticlesUseCase,
+    private val summarizeArticleUseCase: SummarizeArticleUseCase,
 ) : StatefulBaseViewModel<SearchViewModelState, SearchState, SearchIntent, SearchEffect>() {
 
     override fun createInitialViewModelState(): SearchViewModelState = SearchViewModelState()
@@ -44,7 +49,7 @@ class SearchViewModel(
             .launchIn(viewModelScope)
     }
 
-    @Suppress("CyclomaticComplexMethod")
+    @Suppress("CyclomaticComplexMethod", "LongMethod")
     override fun onIntent(intent: SearchIntent) {
         when (intent) {
             is SearchIntent.UpdateQuery -> {
@@ -97,6 +102,12 @@ class SearchViewModel(
             }
             is SearchIntent.UpdateLanguage -> {
                 updateSearchOptions { copy(language = intent.language) }
+            }
+            is SearchIntent.SummarizeArticle -> {
+                summarizeArticle()
+            }
+            is SearchIntent.DismissSummary -> {
+                updateViewModelState { copy(summary = "") }
             }
         }
     }
@@ -160,6 +171,30 @@ class SearchViewModel(
         val query = _viewModelState.value.query
         if (query.isNotBlank()) {
             executeSearch(query)
+        }
+    }
+
+    private fun summarizeArticle() {
+        val article = _viewModelState.value.selectedArticle ?: return
+        viewModelScope.launch {
+            summarizeArticleUseCase(article.url)
+                .onStart {
+                    updateViewModelState { copy(isSummarizing = true, summary = "") }
+                }
+                .onCompletion {
+                    updateViewModelState { copy(isSummarizing = false) }
+                }
+                .catch { error ->
+                    Logger.e(TAG, "Failed to summarize article: ${error.message}", error)
+                    val newsflowError = error as? NewsflowError
+                        ?: NewsflowError.AIError.GenerationFailed(
+                            error.message ?: "Unknown error"
+                        )
+                    sendEffect(SearchEffect.SummaryError(newsflowError))
+                }
+                .collect { text ->
+                    updateViewModelState { copy(summary = summary + text) }
+                }
         }
     }
 

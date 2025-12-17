@@ -13,6 +13,8 @@ sealed interface SearchState : State {
         val selectedArticle: Article? = null,
         val searchOptions: SearchOptions = SearchOptions(),
         val isOptionsSheetVisible: Boolean = false,
+        val isSummarizing: Boolean = false,
+        val summary: String = "",
     ) : SearchState
 
     data class Error(
