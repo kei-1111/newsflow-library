@@ -12,6 +12,8 @@ sealed interface ViewerState : State {
     data class Stable(
         val isWebViewLoading: Boolean,
         val viewingArticle: Article,
+        val isSummarizing: Boolean = false,
+        val summary: String = "",
     ) : ViewerState
 
     data class Error(
