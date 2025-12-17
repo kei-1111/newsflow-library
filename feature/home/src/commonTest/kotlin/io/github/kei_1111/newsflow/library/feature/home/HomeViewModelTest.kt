@@ -7,6 +7,7 @@ import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
@@ -44,7 +45,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
@@ -62,7 +64,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             testDispatcher.scheduler.advanceUntilIdle() // 全ての状態遷移を完了させる
@@ -77,7 +80,8 @@ class HomeViewModelTest {
     fun `NavigateViewer intent emits NavigateViewer effect with article id`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.effect.test {
@@ -95,7 +99,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.TECHNOLOGY
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -121,7 +126,8 @@ class HomeViewModelTest {
         val category = NewsCategory.TECHNOLOGY
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -146,7 +152,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.BUSINESS
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -172,7 +179,8 @@ class HomeViewModelTest {
         val category = NewsCategory.BUSINESS
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -197,7 +205,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.GENERAL // default Category
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -221,7 +230,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network error")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -242,7 +252,8 @@ class HomeViewModelTest {
     fun `ShowArticleOverview intent updates selectedArticle in state`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -260,7 +271,8 @@ class HomeViewModelTest {
     fun `DismissArticleOverview intent clears selectedArticle`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -284,7 +296,8 @@ class HomeViewModelTest {
     fun `CopyArticleUrl intent emits CopyUrl effect when article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.onIntent(HomeIntent.ShowArticleOverview(article))
@@ -302,7 +315,8 @@ class HomeViewModelTest {
     fun `CopyArticleUrl intent does nothing when no article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(HomeIntent.CopyArticleUrl)
@@ -315,7 +329,8 @@ class HomeViewModelTest {
     fun `ShareArticle intent emits ShareArticle effect when article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         // 先に記事を選択
@@ -335,7 +350,8 @@ class HomeViewModelTest {
     fun `ShareArticle intent does nothing when no article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(HomeIntent.ShareArticle)
@@ -350,7 +366,8 @@ class HomeViewModelTest {
         val initialArticles = createTestArticles(3, "Initial")
         val refreshedArticles = createTestArticles(3, "Refreshed")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -376,7 +393,8 @@ class HomeViewModelTest {
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()

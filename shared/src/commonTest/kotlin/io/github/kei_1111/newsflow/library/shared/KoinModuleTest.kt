@@ -2,9 +2,12 @@ package io.github.kei_1111.newsflow.library.shared
 
 import io.github.kei_1111.newsflow.library.core.data.di.dataModule
 import io.github.kei_1111.newsflow.library.core.data.repository.NewsRepository
+import io.github.kei_1111.newsflow.library.core.data.repository.SummaryRepository
 import io.github.kei_1111.newsflow.library.core.domain.di.domainModule
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
+import io.github.kei_1111.newsflow.library.core.network.api.GeminiApiService
 import io.github.kei_1111.newsflow.library.core.network.api.NewsApiService
 import io.github.kei_1111.newsflow.library.core.network.di.networkModule
 import io.github.kei_1111.newsflow.library.feature.home.di.homeModule
@@ -25,7 +28,7 @@ class KoinModuleTest : KoinTest {
     fun setup() {
         startKoin {
             modules(
-                networkModule("test-api-key"),
+                networkModule("test-news-api-key", "test-gemini-api-key"),
                 dataModule,
                 domainModule,
                 homeModule,
@@ -67,6 +70,24 @@ class KoinModuleTest : KoinTest {
     fun `verify GetArticleByIdUseCase can be resolved`() {
         val getArticleByIdUseCase = get<GetArticleByIdUseCase>()
         assertNotNull(getArticleByIdUseCase)
+    }
+
+    @Test
+    fun `verify GeminiApiService can be resolved`() {
+        val geminiApiService = get<GeminiApiService>()
+        assertNotNull(geminiApiService)
+    }
+
+    @Test
+    fun `verify SummaryRepository can be resolved`() {
+        val summaryRepository = get<SummaryRepository>()
+        assertNotNull(summaryRepository)
+    }
+
+    @Test
+    fun `verify SummarizeArticleUseCase can be resolved`() {
+        val summarizeArticleUseCase = get<SummarizeArticleUseCase>()
+        assertNotNull(summarizeArticleUseCase)
     }
 
     /* viewModelOf()で定義したModuleはテストカバレッジ出力のためのjvmTestで失敗するためコメントアウト */

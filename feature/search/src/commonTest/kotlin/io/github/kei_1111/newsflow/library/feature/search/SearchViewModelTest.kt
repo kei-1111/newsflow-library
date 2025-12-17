@@ -6,6 +6,7 @@ import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import io.github.kei_1111.newsflow.library.core.domain.usecase.SearchArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import kotlinx.coroutines.Dispatchers
@@ -42,7 +43,8 @@ class SearchViewModelTest {
     @Test
     fun `initial state is Stable with empty query and articles`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             val initialState = awaitItem()
@@ -58,7 +60,8 @@ class SearchViewModelTest {
     fun `UpdateQuery intent updates query in state`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(emptyList())
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -76,7 +79,8 @@ class SearchViewModelTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -110,7 +114,8 @@ class SearchViewModelTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -145,7 +150,8 @@ class SearchViewModelTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.failure(error)
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -167,7 +173,8 @@ class SearchViewModelTest {
     fun `ClearQuery intent clears query and articles`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(emptyList())
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -192,7 +199,8 @@ class SearchViewModelTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val articles = createTestArticles(3)
         everySuspend { searchArticlesUseCase(any(), any(), any(), any(), any()) } returns Result.success(articles)
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipItems(1) // initial state
@@ -212,7 +220,8 @@ class SearchViewModelTest {
     @Test
     fun `NavigateViewer intent emits NavigateViewer effect`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.effect.test {
@@ -227,7 +236,8 @@ class SearchViewModelTest {
     @Test
     fun `ShowArticleOverview intent updates selectedArticle`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -244,7 +254,8 @@ class SearchViewModelTest {
     @Test
     fun `DismissArticleOverview intent clears selectedArticle`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -266,7 +277,8 @@ class SearchViewModelTest {
     @Test
     fun `CopyArticleUrl intent emits CopyUrl effect when article is selected`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.onIntent(SearchIntent.ShowArticleOverview(article))
@@ -283,7 +295,8 @@ class SearchViewModelTest {
     @Test
     fun `CopyArticleUrl intent does nothing when no article is selected`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(SearchIntent.CopyArticleUrl)
@@ -295,7 +308,8 @@ class SearchViewModelTest {
     @Test
     fun `ShareArticle intent emits ShareArticle effect when article is selected`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.onIntent(SearchIntent.ShowArticleOverview(article))
@@ -313,7 +327,8 @@ class SearchViewModelTest {
     @Test
     fun `ShareArticle intent does nothing when no article is selected`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
-        val viewModel = SearchViewModel(searchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(SearchIntent.ShareArticle)
