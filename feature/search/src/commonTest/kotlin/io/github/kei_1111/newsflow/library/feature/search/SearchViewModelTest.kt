@@ -2,6 +2,7 @@ package io.github.kei_1111.newsflow.library.feature.search
 
 import app.cash.turbine.test
 import dev.mokkery.answering.returns
+import dev.mokkery.every
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
@@ -11,6 +12,8 @@ import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
@@ -334,6 +337,95 @@ class SearchViewModelTest {
             viewModel.onIntent(SearchIntent.ShareArticle)
 
             expectNoEvents()
+        }
+    }
+
+    // Summarize tests
+    @Test
+    fun `SummarizeArticle intent starts summarization and updates state`() = runTest {
+        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.state.test {
+            skipItems(1) // initial state
+
+            viewModel.onIntent(SearchIntent.ShowArticleOverview(article))
+            awaitItem()
+
+            viewModel.onIntent(SearchIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val finalState = expectMostRecentItem()
+            assertIs<SearchState.Stable>(finalState)
+            assertEquals("Summary text", finalState.summary)
+            assertFalse(finalState.isSummarizing)
+        }
+    }
+
+    @Test
+    fun `SummarizeArticle intent does nothing when no article is selected`() = runTest {
+        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
+
+        viewModel.state.test {
+            skipItems(1) // initial state
+
+            viewModel.onIntent(SearchIntent.SummarizeArticle)
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `SummarizeArticle intent emits SummaryError effect on failure`() = runTest {
+        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val error = NewsflowError.AIError.GenerationFailed("Generation failed")
+        every { summarizeArticleUseCase(any()) } returns flow { throw error }
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.onIntent(SearchIntent.ShowArticleOverview(article))
+
+        viewModel.effect.test {
+            viewModel.onIntent(SearchIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val effect = awaitItem()
+            assertIs<SearchEffect.SummaryError>(effect)
+            assertIs<NewsflowError.AIError.GenerationFailed>(effect.error)
+        }
+    }
+
+    @Test
+    fun `DismissSummary intent clears summary state`() = runTest {
+        val searchArticlesUseCase = mock<SearchArticlesUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.state.test {
+            skipItems(1) // initial state
+
+            viewModel.onIntent(SearchIntent.ShowArticleOverview(article))
+            awaitItem()
+
+            viewModel.onIntent(SearchIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val withSummary = expectMostRecentItem()
+            assertIs<SearchState.Stable>(withSummary)
+            assertEquals("Summary text", withSummary.summary)
+
+            viewModel.onIntent(SearchIntent.DismissSummary)
+            val clearedState = awaitItem()
+            assertIs<SearchState.Stable>(clearedState)
+            assertEquals("", clearedState.summary)
         }
     }
 
