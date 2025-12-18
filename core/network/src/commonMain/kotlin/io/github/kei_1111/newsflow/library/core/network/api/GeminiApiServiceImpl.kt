@@ -60,7 +60,7 @@ internal class GeminiApiServiceImpl(
 
         val candidate = response.candidates?.firstOrNull()
         candidate?.finishReason?.let { reason ->
-            if (reason == "SAFETY") {
+            if (reason == FINISH_REASON_SAFETY) {
                 throw GeminiException.ContentFiltered("Content was filtered due to safety settings")
             }
         }
@@ -74,5 +74,6 @@ internal class GeminiApiServiceImpl(
         const val HTTP_UNAUTHORIZED = 401
         const val HTTP_FORBIDDEN = 403
         const val HTTP_TOO_MANY_REQUESTS = 429
+        const val FINISH_REASON_SAFETY = "SAFETY"
     }
 }

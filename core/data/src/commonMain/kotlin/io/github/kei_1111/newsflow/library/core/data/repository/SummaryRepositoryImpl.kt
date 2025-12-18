@@ -24,8 +24,8 @@ internal class SummaryRepositoryImpl(
 
         val summaryBuilder = StringBuilder()
         geminiApiService.summarizeUrlStream(articleUrl)
-            .onCompletion {
-                if (summaryBuilder.isNotEmpty()) {
+            .onCompletion { cause ->
+                if (cause == null && summaryBuilder.isNotEmpty()) {
                     cacheMutex.withLock {
                         cache[articleUrl] = summaryBuilder.toString()
                     }
