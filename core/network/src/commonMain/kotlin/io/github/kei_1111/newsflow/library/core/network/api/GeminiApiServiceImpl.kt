@@ -1,6 +1,7 @@
 package io.github.kei_1111.newsflow.library.core.network.api
 
 import io.github.kei_1111.newsflow.library.core.network.exception.GeminiException
+import io.github.kei_1111.newsflow.library.core.network.exception.NetworkException
 import io.github.kei_1111.newsflow.library.core.network.model.GeminiRequest
 import io.github.kei_1111.newsflow.library.core.network.model.GeminiResponse
 import io.ktor.client.HttpClient
@@ -52,9 +53,9 @@ internal class GeminiApiServiceImpl(
         response.error?.let { error ->
             val message = error.message ?: "Unknown error"
             throw when (error.code) {
-                HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> GeminiException.InvalidApiKey(message)
-                HTTP_TOO_MANY_REQUESTS -> GeminiException.QuotaExceeded(message)
-                else -> GeminiException.GenerationFailed(message)
+                HTTP_UNAUTHORIZED, HTTP_FORBIDDEN -> NetworkException.Unauthorized(message)
+                HTTP_TOO_MANY_REQUESTS -> NetworkException.RateLimitExceeded(message)
+                else -> NetworkException.ServerError(message)
             }
         }
 

@@ -288,7 +288,7 @@ class ViewerViewModelTest {
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
         val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
-        val error = NewsflowError.AIError.GenerationFailed("Generation failed")
+        val error = NewsflowError.NetworkError.ContentFiltered("Content filtered")
         every { summarizeArticleUseCase(any()) } returns flow { throw error }
         val viewModel = ViewerViewModel(
             articleId = article.id,
@@ -304,7 +304,7 @@ class ViewerViewModelTest {
 
             val effect = awaitItem()
             assertIs<ViewerEffect.SummaryError>(effect)
-            assertIs<NewsflowError.AIError.GenerationFailed>(effect.error)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(effect.error)
         }
     }
 

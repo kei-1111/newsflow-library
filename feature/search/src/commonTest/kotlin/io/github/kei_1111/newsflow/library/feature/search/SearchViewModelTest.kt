@@ -384,7 +384,7 @@ class SearchViewModelTest {
     fun `SummarizeArticle intent emits SummaryError effect on failure`() = runTest {
         val searchArticlesUseCase = mock<SearchArticlesUseCase>()
         val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
-        val error = NewsflowError.AIError.GenerationFailed("Generation failed")
+        val error = NewsflowError.NetworkError.ContentFiltered("Content filtered")
         every { summarizeArticleUseCase(any()) } returns flow { throw error }
         val viewModel = SearchViewModel(searchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
@@ -397,7 +397,7 @@ class SearchViewModelTest {
 
             val effect = awaitItem()
             assertIs<SearchEffect.SummaryError>(effect)
-            assertIs<NewsflowError.AIError.GenerationFailed>(effect.error)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(effect.error)
         }
     }
 

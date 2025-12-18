@@ -46,32 +46,32 @@ class SummarizeArticleUseCaseImplTest {
     }
 
     @Test
-    fun `invoke propagates InvalidApiKey error from repository`() = runTest {
+    fun `invoke propagates Unauthorized error from repository`() = runTest {
         val summaryRepository = mock<SummaryRepository>()
         every { summaryRepository.summarizeArticle("https://example.com/article") } returns flow {
-            throw NewsflowError.AIError.InvalidApiKey("Invalid API key")
+            throw NewsflowError.NetworkError.Unauthorized("Invalid API key")
         }
         val useCase = SummarizeArticleUseCaseImpl(summaryRepository)
 
         useCase("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.InvalidApiKey>(error)
+            assertIs<NewsflowError.NetworkError.Unauthorized>(error)
             assertEquals("Invalid API key", error.message)
         }
     }
 
     @Test
-    fun `invoke propagates QuotaExceeded error from repository`() = runTest {
+    fun `invoke propagates RateLimitExceeded error from repository`() = runTest {
         val summaryRepository = mock<SummaryRepository>()
         every { summaryRepository.summarizeArticle("https://example.com/article") } returns flow {
-            throw NewsflowError.AIError.QuotaExceeded("Quota exceeded")
+            throw NewsflowError.NetworkError.RateLimitExceeded("Rate limit exceeded")
         }
         val useCase = SummarizeArticleUseCaseImpl(summaryRepository)
 
         useCase("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.QuotaExceeded>(error)
-            assertEquals("Quota exceeded", error.message)
+            assertIs<NewsflowError.NetworkError.RateLimitExceeded>(error)
+            assertEquals("Rate limit exceeded", error.message)
         }
     }
 
@@ -79,29 +79,29 @@ class SummarizeArticleUseCaseImplTest {
     fun `invoke propagates ContentFiltered error from repository`() = runTest {
         val summaryRepository = mock<SummaryRepository>()
         every { summaryRepository.summarizeArticle("https://example.com/article") } returns flow {
-            throw NewsflowError.AIError.ContentFiltered("Content filtered")
+            throw NewsflowError.NetworkError.ContentFiltered("Content filtered")
         }
         val useCase = SummarizeArticleUseCaseImpl(summaryRepository)
 
         useCase("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.ContentFiltered>(error)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(error)
             assertEquals("Content filtered", error.message)
         }
     }
 
     @Test
-    fun `invoke propagates GenerationFailed error from repository`() = runTest {
+    fun `invoke propagates ServerError error from repository`() = runTest {
         val summaryRepository = mock<SummaryRepository>()
         every { summaryRepository.summarizeArticle("https://example.com/article") } returns flow {
-            throw NewsflowError.AIError.GenerationFailed("Generation failed")
+            throw NewsflowError.NetworkError.ServerError("Server error")
         }
         val useCase = SummarizeArticleUseCaseImpl(summaryRepository)
 
         useCase("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.GenerationFailed>(error)
-            assertEquals("Generation failed", error.message)
+            assertIs<NewsflowError.NetworkError.ServerError>(error)
+            assertEquals("Server error", error.message)
         }
     }
 

@@ -10,10 +10,6 @@ internal fun Throwable.toNewsflowError(): NewsflowError = when (this) {
     is NetworkException.BadRequest -> NewsflowError.NetworkError.BadRequest(message)
     is NetworkException.ServerError -> NewsflowError.NetworkError.ServerError(message)
     is NetworkException.NetworkFailure -> NewsflowError.NetworkError.NetworkFailure(message)
-    is GeminiException.InvalidApiKey -> NewsflowError.AIError.InvalidApiKey(message)
-    is GeminiException.QuotaExceeded -> NewsflowError.AIError.QuotaExceeded(message)
-    is GeminiException.ContentFiltered -> NewsflowError.AIError.ContentFiltered(message)
-    is GeminiException.GenerationFailed -> NewsflowError.AIError.GenerationFailed(message)
-    is GeminiException.UrlAccessFailed -> NewsflowError.AIError.UrlAccessFailed(message)
+    is GeminiException.ContentFiltered -> NewsflowError.NetworkError.ContentFiltered(message)
     else -> NewsflowError.NetworkError.NetworkFailure(message ?: "Unknown error")
 }

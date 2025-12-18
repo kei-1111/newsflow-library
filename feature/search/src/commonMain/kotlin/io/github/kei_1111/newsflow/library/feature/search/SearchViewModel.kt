@@ -187,7 +187,7 @@ class SearchViewModel(
                 .catch { error ->
                     Logger.e(TAG, "Failed to summarize article: ${error.message}", error)
                     val newsflowError = error as? NewsflowError
-                        ?: NewsflowError.AIError.GenerationFailed(
+                        ?: NewsflowError.NetworkError.NetworkFailure(
                             error.message ?: "Unknown error"
                         )
                     sendEffect(SearchEffect.SummaryError(newsflowError))

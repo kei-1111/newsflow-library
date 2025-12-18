@@ -9,6 +9,7 @@ import dev.mokkery.verify.VerifyMode.Companion.exactly
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.network.api.GeminiApiService
 import io.github.kei_1111.newsflow.library.core.network.exception.GeminiException
+import io.github.kei_1111.newsflow.library.core.network.exception.NetworkException
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -93,32 +94,32 @@ class SummaryRepositoryImplTest {
     }
 
     @Test
-    fun `summarizeArticle converts InvalidApiKey exception to AIError`() = runTest {
+    fun `summarizeArticle converts Unauthorized exception to NetworkError`() = runTest {
         val geminiApiService = mock<GeminiApiService>()
         every { geminiApiService.summarizeUrlStream("https://example.com/article") } returns flow {
-            throw GeminiException.InvalidApiKey("Invalid API key")
+            throw NetworkException.Unauthorized("Invalid API key")
         }
         val repository = SummaryRepositoryImpl(geminiApiService)
 
         repository.summarizeArticle("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.InvalidApiKey>(error)
+            assertIs<NewsflowError.NetworkError.Unauthorized>(error)
             assertEquals("Invalid API key", error.message)
         }
     }
 
     @Test
-    fun `summarizeArticle converts QuotaExceeded exception to AIError`() = runTest {
+    fun `summarizeArticle converts RateLimitExceeded exception to NetworkError`() = runTest {
         val geminiApiService = mock<GeminiApiService>()
         every { geminiApiService.summarizeUrlStream("https://example.com/article") } returns flow {
-            throw GeminiException.QuotaExceeded("Quota exceeded")
+            throw NetworkException.RateLimitExceeded("Rate limit exceeded")
         }
         val repository = SummaryRepositoryImpl(geminiApiService)
 
         repository.summarizeArticle("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.QuotaExceeded>(error)
-            assertEquals("Quota exceeded", error.message)
+            assertIs<NewsflowError.NetworkError.RateLimitExceeded>(error)
+            assertEquals("Rate limit exceeded", error.message)
         }
     }
 
@@ -132,23 +133,23 @@ class SummaryRepositoryImplTest {
 
         repository.summarizeArticle("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.ContentFiltered>(error)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(error)
             assertEquals("Content filtered", error.message)
         }
     }
 
     @Test
-    fun `summarizeArticle converts GenerationFailed exception to AIError`() = runTest {
+    fun `summarizeArticle converts ServerError exception to NetworkError`() = runTest {
         val geminiApiService = mock<GeminiApiService>()
         every { geminiApiService.summarizeUrlStream("https://example.com/article") } returns flow {
-            throw GeminiException.GenerationFailed("Generation failed")
+            throw NetworkException.ServerError("Server error")
         }
         val repository = SummaryRepositoryImpl(geminiApiService)
 
         repository.summarizeArticle("https://example.com/article").test {
             val error = awaitError()
-            assertIs<NewsflowError.AIError.GenerationFailed>(error)
-            assertEquals("Generation failed", error.message)
+            assertIs<NewsflowError.NetworkError.ServerError>(error)
+            assertEquals("Server error", error.message)
         }
     }
 
@@ -159,7 +160,7 @@ class SummaryRepositoryImplTest {
         every { geminiApiService.summarizeUrlStream("https://example.com/article") } returns flow {
             callCount++
             if (callCount == 1) {
-                throw GeminiException.GenerationFailed("First call fails")
+                throw NetworkException.ServerError("First call fails")
             } else {
                 emit("Success on retry")
             }

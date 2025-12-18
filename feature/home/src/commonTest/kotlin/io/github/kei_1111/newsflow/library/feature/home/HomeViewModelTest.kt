@@ -463,7 +463,7 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
         val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
-        val error = NewsflowError.AIError.GenerationFailed("Generation failed")
+        val error = NewsflowError.NetworkError.ContentFiltered("Content filtered")
         every { summarizeArticleUseCase(any()) } returns flow { throw error }
         val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
@@ -476,7 +476,7 @@ class HomeViewModelTest {
 
             val effect = awaitItem()
             assertIs<HomeEffect.SummaryError>(effect)
-            assertIs<NewsflowError.AIError.GenerationFailed>(effect.error)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(effect.error)
         }
     }
 
