@@ -26,7 +26,7 @@ data class HomeViewModelState(
             currentNewsCategory = currentNewsCategory,
             articlesByCategory = articlesByCategory,
             isSummarizing = isSummarizing,
-            summary = summary,
+            summary = summary.trim(),
         )
 
         StatusType.ERROR -> HomeState.Error(

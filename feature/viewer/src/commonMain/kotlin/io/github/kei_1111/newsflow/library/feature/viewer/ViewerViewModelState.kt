@@ -23,7 +23,7 @@ data class ViewerViewModelState(
             isWebViewLoading = isWebViewLoading,
             viewingArticle = requireNotNull(viewingArticle) { "Article must not be null when statusType is STABLE" },
             isSummarizing = isSummarizing,
-            summary = summary,
+            summary = summary.trim(),
         )
 
         StatusType.ERROR -> ViewerState.Error(

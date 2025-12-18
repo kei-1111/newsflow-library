@@ -30,11 +30,11 @@ data class GeminiRequest(
     companion object {
         fun forSummarization(articleUrl: String): GeminiRequest {
             val prompt = """
-                以下のURLの記事を日本語で要約してください。
+                Summarize the article at the following URL in English.
 
                 URL: $articleUrl
 
-                要約は3〜5文程度で、記事の主要なポイントを簡潔にまとめてください。
+                Please provide a concise summary in 3-5 sentences, capturing the main points of the article.
             """.trimIndent()
 
             return GeminiRequest(

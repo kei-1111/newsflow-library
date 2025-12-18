@@ -28,7 +28,7 @@ data class SearchViewModelState(
             searchOptions = searchOptions,
             isOptionsSheetVisible = isOptionsSheetVisible,
             isSummarizing = isSummarizing,
-            summary = summary,
+            summary = summary.trim(),
         )
 
         StatusType.ERROR -> SearchState.Error(
