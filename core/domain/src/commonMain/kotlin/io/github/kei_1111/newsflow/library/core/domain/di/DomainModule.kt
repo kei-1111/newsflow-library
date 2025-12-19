@@ -6,6 +6,8 @@ import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUse
 import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCaseImpl
 import io.github.kei_1111.newsflow.library.core.domain.usecase.SearchArticlesUseCase
 import io.github.kei_1111.newsflow.library.core.domain.usecase.SearchArticlesUseCaseImpl
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCaseImpl
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -14,4 +16,5 @@ val domainModule = module {
     singleOf(::FetchTopHeadlineArticlesUseCaseImpl) bind FetchTopHeadlineArticlesUseCase::class
     singleOf(::GetArticleByIdUseCaseImpl) bind GetArticleByIdUseCase::class
     singleOf(::SearchArticlesUseCaseImpl) bind SearchArticlesUseCase::class
+    singleOf(::SummarizeArticleUseCaseImpl) bind SummarizeArticleUseCase::class
 }

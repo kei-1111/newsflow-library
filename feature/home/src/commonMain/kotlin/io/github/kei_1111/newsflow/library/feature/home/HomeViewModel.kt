@@ -2,15 +2,20 @@ package io.github.kei_1111.newsflow.library.feature.home
 
 import androidx.lifecycle.viewModelScope
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.logger.Logger
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import io.github.kei_1111.newsflow.library.core.mvi.stateful.StatefulBaseViewModel
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class HomeViewModel(
-    private val fetchTopHeadlineArticlesUseCase: FetchTopHeadlineArticlesUseCase
+    private val fetchTopHeadlineArticlesUseCase: FetchTopHeadlineArticlesUseCase,
+    private val summarizeArticleUseCase: SummarizeArticleUseCase,
 ) : StatefulBaseViewModel<HomeViewModelState, HomeState, HomeIntent, HomeEffect>() {
 
     override fun createInitialViewModelState(): HomeViewModelState = HomeViewModelState()
@@ -57,6 +62,12 @@ class HomeViewModel(
             }
             is HomeIntent.NavigateSearch -> {
                 sendEffect(HomeEffect.NavigateSearch)
+            }
+            is HomeIntent.SummarizeArticle -> {
+                summarizeArticle()
+            }
+            is HomeIntent.DismissSummary -> {
+                updateViewModelState { copy(summary = "") }
             }
         }
     }
@@ -158,6 +169,30 @@ class HomeViewModel(
                 isRefreshing = false,
                 error = error as? NewsflowError
             )
+        }
+    }
+
+    private fun summarizeArticle() {
+        val article = _viewModelState.value.selectedArticle ?: return
+        viewModelScope.launch {
+            summarizeArticleUseCase(article.url)
+                .onStart {
+                    updateViewModelState { copy(isSummarizing = true, summary = "") }
+                }
+                .onCompletion {
+                    updateViewModelState { copy(isSummarizing = false) }
+                }
+                .catch { error ->
+                    Logger.e(TAG, "Failed to summarize article: ${error.message}", error)
+                    val newsflowError = error as? NewsflowError
+                        ?: NewsflowError.NetworkError.NetworkFailure(
+                            error.message ?: "Unknown error"
+                        )
+                    sendEffect(HomeEffect.SummaryError(newsflowError))
+                }
+                .collect { text ->
+                    updateViewModelState { copy(summary = summary + text) }
+                }
         }
     }
 

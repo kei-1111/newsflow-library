@@ -7,4 +7,6 @@ sealed interface ViewerIntent : Intent {
     data object ShareArticle : ViewerIntent
     data object StartWebViewLoading : ViewerIntent
     data object FinishWebViewLoading : ViewerIntent
+    data object SummarizeArticle : ViewerIntent
+    data object DismissSummary : ViewerIntent
 }

@@ -9,6 +9,7 @@ val viewerModule = module {
         ViewerViewModel(
             articleId = articleId,
             getArticleByIdUseCase = get(),
+            summarizeArticleUseCase = get(),
         )
     }
 }

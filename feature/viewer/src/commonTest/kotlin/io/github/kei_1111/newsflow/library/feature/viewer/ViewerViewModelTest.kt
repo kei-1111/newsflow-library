@@ -2,16 +2,20 @@ package io.github.kei_1111.newsflow.library.feature.viewer
 
 import app.cash.turbine.test
 import dev.mokkery.answering.returns
+import dev.mokkery.every
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import dev.mokkery.verify.VerifyMode.Companion.exactly
 import dev.mokkery.verifySuspend
 import io.github.kei_1111.newsflow.library.core.domain.usecase.GetArticleByIdUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -21,6 +25,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -43,9 +48,11 @@ class ViewerViewModelTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -60,11 +67,13 @@ class ViewerViewModelTest {
     @Test
     fun `initialization fails to get article and transitions to error state`() = runTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val error = NewsflowError.InternalError.ArticleNotFound("Article Not Found")
         everySuspend { getArticleByIdUseCase(any()) } returns Result.failure(error)
         val viewModel = ViewerViewModel(
             articleId = "valid-id",
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -79,9 +88,11 @@ class ViewerViewModelTest {
     @Test
     fun `initialization with blank articleId transitions to error state immediately`() = runTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "",
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -98,9 +109,11 @@ class ViewerViewModelTest {
     @Test
     fun `initialization with whitespace only articleId transitions to error state immediately`() = runTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = "   ",
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -119,9 +132,11 @@ class ViewerViewModelTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.effect.test {
@@ -137,9 +152,11 @@ class ViewerViewModelTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         // 記事の取得が完了するまで待機
@@ -161,9 +178,11 @@ class ViewerViewModelTest {
         val articleId = "test-article-123"
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = articleId,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -178,9 +197,11 @@ class ViewerViewModelTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -210,9 +231,11 @@ class ViewerViewModelTest {
         val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
         val article = createTestArticle(1)
         everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
         val viewModel = ViewerViewModel(
             articleId = article.id,
             getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
         )
 
         viewModel.state.test {
@@ -228,6 +251,91 @@ class ViewerViewModelTest {
             val finishedState = awaitItem()
             assertIs<ViewerState.Stable>(finishedState)
             assertEquals(false, finishedState.isWebViewLoading)
+        }
+    }
+
+    // Summarize tests
+    @Test
+    fun `SummarizeArticle intent starts summarization and updates state`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // Loading
+            awaitItem() // Stable with article
+
+            viewModel.onIntent(ViewerIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val finalState = expectMostRecentItem()
+            assertIs<ViewerState.Stable>(finalState)
+            assertEquals("Summary text", finalState.summary)
+            assertFalse(finalState.isSummarizing)
+        }
+    }
+
+    @Test
+    fun `SummarizeArticle intent emits SummaryError effect on failure`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val error = NewsflowError.NetworkError.ContentFiltered("Content filtered")
+        every { summarizeArticleUseCase(any()) } returns flow { throw error }
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
+        )
+
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        viewModel.effect.test {
+            viewModel.onIntent(ViewerIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val effect = awaitItem()
+            assertIs<ViewerEffect.SummaryError>(effect)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(effect.error)
+        }
+    }
+
+    @Test
+    fun `DismissSummary intent clears summary state`() = runTest {
+        val getArticleByIdUseCase = mock<GetArticleByIdUseCase>()
+        val article = createTestArticle(1)
+        everySuspend { getArticleByIdUseCase(any()) } returns Result.success(article)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = ViewerViewModel(
+            articleId = article.id,
+            getArticleByIdUseCase = getArticleByIdUseCase,
+            summarizeArticleUseCase = summarizeArticleUseCase,
+        )
+
+        viewModel.state.test {
+            skipItems(1) // Loading
+            awaitItem() // Stable with article
+
+            viewModel.onIntent(ViewerIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val withSummary = expectMostRecentItem()
+            assertIs<ViewerState.Stable>(withSummary)
+            assertEquals("Summary text", withSummary.summary)
+
+            viewModel.onIntent(ViewerIntent.DismissSummary)
+            val clearedState = awaitItem()
+            assertIs<ViewerState.Stable>(clearedState)
+            assertEquals("", clearedState.summary)
         }
     }
 

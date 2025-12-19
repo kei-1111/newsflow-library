@@ -11,10 +11,10 @@ import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.context.startKoin
 
-actual fun initKoin(newsApiKey: String, appContext: Any?) {
+actual fun initKoin(newsApiKey: String, geminiApiKey: String, appContext: Any?) {
     startKoin {
         modules(
-            networkModule(newsApiKey),
+            networkModule(newsApiKey, geminiApiKey),
             dataModule,
             domainModule,
             homeModule,

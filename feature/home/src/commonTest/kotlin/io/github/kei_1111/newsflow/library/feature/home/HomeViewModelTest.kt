@@ -3,15 +3,19 @@ package io.github.kei_1111.newsflow.library.feature.home
 import app.cash.turbine.ReceiveTurbine
 import app.cash.turbine.test
 import dev.mokkery.answering.returns
+import dev.mokkery.every
 import dev.mokkery.everySuspend
 import dev.mokkery.matcher.any
 import dev.mokkery.mock
 import io.github.kei_1111.newsflow.library.core.domain.usecase.FetchTopHeadlineArticlesUseCase
+import io.github.kei_1111.newsflow.library.core.domain.usecase.SummarizeArticleUseCase
 import io.github.kei_1111.newsflow.library.core.model.Article
 import io.github.kei_1111.newsflow.library.core.model.NewsCategory
 import io.github.kei_1111.newsflow.library.core.model.NewsflowError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -44,7 +48,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val articles = createTestArticles(3)
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             testDispatcher.scheduler.advanceUntilIdle() // init->fetch->UseCase
@@ -62,7 +67,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             testDispatcher.scheduler.advanceUntilIdle() // 全ての状態遷移を完了させる
@@ -77,7 +83,8 @@ class HomeViewModelTest {
     fun `NavigateViewer intent emits NavigateViewer effect with article id`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.effect.test {
@@ -95,7 +102,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.TECHNOLOGY
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -121,7 +129,8 @@ class HomeViewModelTest {
         val category = NewsCategory.TECHNOLOGY
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -146,7 +155,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.BUSINESS
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -172,7 +182,8 @@ class HomeViewModelTest {
         val category = NewsCategory.BUSINESS
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -197,7 +208,8 @@ class HomeViewModelTest {
         val articles = createTestArticles(3)
         val category = NewsCategory.GENERAL // default Category
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(articles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -221,7 +233,8 @@ class HomeViewModelTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         val error = NewsflowError.NetworkError.NetworkFailure("Network error")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.failure(error)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -242,7 +255,8 @@ class HomeViewModelTest {
     fun `ShowArticleOverview intent updates selectedArticle in state`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -260,7 +274,8 @@ class HomeViewModelTest {
     fun `DismissArticleOverview intent clears selectedArticle`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.state.test {
@@ -284,7 +299,8 @@ class HomeViewModelTest {
     fun `CopyArticleUrl intent emits CopyUrl effect when article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         viewModel.onIntent(HomeIntent.ShowArticleOverview(article))
@@ -302,7 +318,8 @@ class HomeViewModelTest {
     fun `CopyArticleUrl intent does nothing when no article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(HomeIntent.CopyArticleUrl)
@@ -315,7 +332,8 @@ class HomeViewModelTest {
     fun `ShareArticle intent emits ShareArticle effect when article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
         val article = createTestArticle(1)
 
         // 先に記事を選択
@@ -335,7 +353,8 @@ class HomeViewModelTest {
     fun `ShareArticle intent does nothing when no article is selected`() = runTest {
         val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.effect.test {
             viewModel.onIntent(HomeIntent.ShareArticle)
@@ -350,7 +369,8 @@ class HomeViewModelTest {
         val initialArticles = createTestArticles(3, "Initial")
         val refreshedArticles = createTestArticles(3, "Refreshed")
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -376,7 +396,8 @@ class HomeViewModelTest {
         val error = NewsflowError.NetworkError.NetworkFailure("Network Error")
         // 初期化は成功させる
         everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(initialArticles)
-        val viewModel = HomeViewModel(fetchArticlesUseCase)
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
 
         viewModel.state.test {
             skipInitialization()
@@ -392,6 +413,99 @@ class HomeViewModelTest {
             val errorState = awaitItem()
             assertIs<HomeState.Error>(errorState)
             assertEquals(error, errorState.error)
+        }
+    }
+
+    // Summarize tests
+    @Test
+    fun `SummarizeArticle intent starts summarization and updates state`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.state.test {
+            skipInitialization()
+
+            viewModel.onIntent(HomeIntent.ShowArticleOverview(article))
+            awaitItem()
+
+            viewModel.onIntent(HomeIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val finalState = expectMostRecentItem()
+            assertIs<HomeState.Stable>(finalState)
+            assertEquals("Summary text", finalState.summary)
+            assertFalse(finalState.isSummarizing)
+        }
+    }
+
+    @Test
+    fun `SummarizeArticle intent does nothing when no article is selected`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
+
+        viewModel.state.test {
+            skipInitialization()
+
+            viewModel.onIntent(HomeIntent.SummarizeArticle)
+
+            expectNoEvents()
+        }
+    }
+
+    @Test
+    fun `SummarizeArticle intent emits SummaryError effect on failure`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        val error = NewsflowError.NetworkError.ContentFiltered("Content filtered")
+        every { summarizeArticleUseCase(any()) } returns flow { throw error }
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.onIntent(HomeIntent.ShowArticleOverview(article))
+
+        viewModel.effect.test {
+            viewModel.onIntent(HomeIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val effect = awaitItem()
+            assertIs<HomeEffect.SummaryError>(effect)
+            assertIs<NewsflowError.NetworkError.ContentFiltered>(effect.error)
+        }
+    }
+
+    @Test
+    fun `DismissSummary intent clears summary state`() = runTest {
+        val fetchArticlesUseCase = mock<FetchTopHeadlineArticlesUseCase>()
+        everySuspend { fetchArticlesUseCase(any(), any()) } returns Result.success(emptyList())
+        val summarizeArticleUseCase = mock<SummarizeArticleUseCase>()
+        every { summarizeArticleUseCase(any()) } returns flowOf("Summary text")
+        val viewModel = HomeViewModel(fetchArticlesUseCase, summarizeArticleUseCase)
+        val article = createTestArticle(1)
+
+        viewModel.state.test {
+            skipInitialization()
+
+            viewModel.onIntent(HomeIntent.ShowArticleOverview(article))
+            awaitItem()
+
+            viewModel.onIntent(HomeIntent.SummarizeArticle)
+            testDispatcher.scheduler.advanceUntilIdle()
+
+            val withSummary = expectMostRecentItem()
+            assertIs<HomeState.Stable>(withSummary)
+            assertEquals("Summary text", withSummary.summary)
+
+            viewModel.onIntent(HomeIntent.DismissSummary)
+            val clearedState = awaitItem()
+            assertIs<HomeState.Stable>(clearedState)
+            assertEquals("", clearedState.summary)
         }
     }
 

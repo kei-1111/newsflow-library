@@ -14,4 +14,6 @@ sealed interface HomeIntent : Intent {
     data object RetryLoad : HomeIntent
     data object RefreshArticles : HomeIntent
     data object NavigateSearch : HomeIntent
+    data object SummarizeArticle : HomeIntent
+    data object DismissSummary : HomeIntent
 }

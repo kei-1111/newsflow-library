@@ -13,6 +13,8 @@ data class HomeViewModelState(
     val currentNewsCategory: NewsCategory = NewsCategory.GENERAL,
     val articlesByCategory: Map<NewsCategory, List<Article>> = emptyMap(),
     val error: NewsflowError? = null,
+    val isSummarizing: Boolean = false,
+    val summary: String = "",
 ) : ViewModelState<HomeState> {
     enum class StatusType { STABLE, ERROR }
 
@@ -22,7 +24,9 @@ data class HomeViewModelState(
             isRefreshing = isRefreshing,
             selectedArticle = selectedArticle,
             currentNewsCategory = currentNewsCategory,
-            articlesByCategory = articlesByCategory
+            articlesByCategory = articlesByCategory,
+            isSummarizing = isSummarizing,
+            summary = summary.trim(),
         )
 
         StatusType.ERROR -> HomeState.Error(

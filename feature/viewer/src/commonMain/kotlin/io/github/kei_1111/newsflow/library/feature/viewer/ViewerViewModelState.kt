@@ -9,6 +9,8 @@ data class ViewerViewModelState(
     val isWebViewLoading: Boolean = true,
     val viewingArticle: Article? = null,
     val error: NewsflowError? = null,
+    val isSummarizing: Boolean = false,
+    val summary: String = "",
 ) : ViewModelState<ViewerState> {
     enum class StatusType { INIT, LOADING, STABLE, ERROR }
 
@@ -19,7 +21,9 @@ data class ViewerViewModelState(
 
         StatusType.STABLE -> ViewerState.Stable(
             isWebViewLoading = isWebViewLoading,
-            viewingArticle = requireNotNull(viewingArticle) { "Article must not be null when statusType is STABLE" }
+            viewingArticle = requireNotNull(viewingArticle) { "Article must not be null when statusType is STABLE" },
+            isSummarizing = isSummarizing,
+            summary = summary.trim(),
         )
 
         StatusType.ERROR -> ViewerState.Error(

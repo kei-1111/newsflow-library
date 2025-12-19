@@ -7,6 +7,7 @@ sealed class NewsflowError(message: String) : Exception(message) {
         data class BadRequest(override val message: String) : NetworkError(message)
         data class ServerError(override val message: String) : NetworkError(message)
         data class NetworkFailure(override val message: String) : NetworkError(message)
+        data class ContentFiltered(override val message: String = "Content was filtered") : NetworkError(message)
     }
 
     sealed class InternalError(message: String) : NewsflowError(message) {
